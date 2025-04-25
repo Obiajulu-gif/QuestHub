@@ -9,6 +9,7 @@ const inter = Inter({ subsets: ["latin"] })
 export const metadata = {
   title: "QuestHub - Web3 Quest Platform on Solana",
   description: "Gamified quest platform on Solana blockchain",
+    generator: 'v0.dev'
 }
 
 export default function RootLayout({ children }) {
