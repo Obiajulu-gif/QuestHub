@@ -1,7 +1,7 @@
 "use client"
 
 import { useState, useEffect } from "react"
-import { useRouter } from "next/navigation"
+import { useRouter, useSearchParams } from "next/navigation"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { motion } from "framer-motion"
 import Layout from "@/components/Layout"
@@ -99,11 +99,14 @@ const badgesData = [
 
 export default function Badges() {
   const router = useRouter()
+  const searchParams = useSearchParams()
   const { connected } = useWallet()
+  const [badges, setBadges] = useState(badgesData)
   const [selectedBadge, setSelectedBadge] = useState(null)
   const [showWalletModal, setShowWalletModal] = useState(false)
   const [filter, setFilter] = useState("all") // all, owned, available
   const [loading, setLoading] = useState(true)
+  const [showEarnedAnimation, setShowEarnedAnimation] = useState(false)
 
   useEffect(() => {
     // Check if wallet is connected
@@ -116,11 +119,20 @@ export default function Badges() {
       setLoading(false)
     }, 1000)
 
+    // Check if there's a highlighted badge from notification
+    const highlightBadgeId = searchParams.get("highlight")
+    if (highlightBadgeId) {
+      const badge = badges.find((b) => b.id === highlightBadgeId)
+      if (badge) {
+        setSelectedBadge(badge)
+      }
+    }
+
     return () => clearTimeout(timer)
-  }, [connected])
+  }, [connected, searchParams, badges])
 
   // Filter badges based on selected filter
-  const filteredBadges = badgesData.filter((badge) => {
+  const filteredBadges = badges.filter((badge) => {
     if (filter === "owned") return badge.owned
     if (filter === "available") return !badge.owned
     return true // "all" filter
@@ -128,10 +140,33 @@ export default function Badges() {
 
   const openBadgeDetail = (badge) => {
     setSelectedBadge(badge)
+    setShowEarnedAnimation(false)
   }
 
   const closeBadgeDetail = () => {
     setSelectedBadge(null)
+  }
+
+  // Function to simulate earning a badge
+  const earnBadge = (badgeId) => {
+    setBadges((prev) =>
+      prev.map((badge) => {
+        if (badge.id === badgeId && !badge.owned) {
+          setSelectedBadge({
+            ...badge,
+            owned: true,
+            dateEarned: new Date().toISOString(),
+          })
+          setShowEarnedAnimation(true)
+          return {
+            ...badge,
+            owned: true,
+            dateEarned: new Date().toISOString(),
+          }
+        }
+        return badge
+      }),
+    )
   }
 
   if (loading) {
@@ -188,24 +223,38 @@ export default function Badges() {
         </div>
 
         {connected ? (
-          <motion.div
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.5 }}
-          >
-            {filteredBadges.map((badge, index) => (
-              <motion.div
-                key={badge.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: index * 0.1 }}
-                onClick={() => openBadgeDetail(badge)}
-              >
-                <BadgeCard badge={badge} />
-              </motion.div>
-            ))}
-          </motion.div>
+          <>
+            <motion.div
+              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ duration: 0.5 }}
+            >
+              {filteredBadges.map((badge, index) => (
+                <motion.div
+                  key={badge.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: index * 0.1 }}
+                  onClick={() => openBadgeDetail(badge)}
+                >
+                  <BadgeCard badge={badge} />
+                </motion.div>
+              ))}
+            </motion.div>
+
+            {/* Demo button to earn a badge - for testing notifications */}
+            {filter === "available" && filteredBadges.length > 0 && (
+              <div className="mt-8 text-center">
+                <button
+                  className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
+                  onClick={() => earnBadge(filteredBadges[0].id)}
+                >
+                  Earn "{filteredBadges[0].name}" Badge (Demo)
+                </button>
+              </div>
+            )}
+          </>
         ) : (
           <div className="flex flex-col items-center justify-center py-12 text-center">
             <div className="w-24 h-24 bg-[#151524] rounded-full flex items-center justify-center mb-6">
@@ -234,7 +283,13 @@ export default function Badges() {
         )}
 
         {/* Badge Detail Modal */}
-        {selectedBadge && <BadgeDetailModal badge={selectedBadge} onClose={closeBadgeDetail} />}
+        {selectedBadge && (
+          <BadgeDetailModal
+            badge={selectedBadge}
+            onClose={closeBadgeDetail}
+            showEarnedAnimation={showEarnedAnimation}
+          />
+        )}
       </div>
     </Layout>
   )

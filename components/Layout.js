@@ -6,10 +6,13 @@ import Link from "next/link"
 import { motion, AnimatePresence } from "framer-motion"
 import WalletConnect from "./WalletConnect"
 import WalletBalance from "./WalletBalance"
+import NotificationDropdown from "./notifications/NotificationDropdown"
+import { useWallet } from "@solana/wallet-adapter-react"
 
 export default function Layout({ children, hideNav = false }) {
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
+  const { connected } = useWallet()
 
   // Close mobile menu when route changes
   useEffect(() => {
@@ -121,6 +124,26 @@ export default function Layout({ children, hideNav = false }) {
       ),
     },
     {
+      name: "Notifications",
+      path: "/notifications",
+      icon: (
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          width="20"
+          height="20"
+          viewBox="0 0 24 24"
+          fill="none"
+          stroke="currentColor"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+        >
+          <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9"></path>
+          <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0"></path>
+        </svg>
+      ),
+    },
+    {
       name: "Leaderboard",
       path: "/leaderboard",
       icon: (
@@ -171,6 +194,7 @@ export default function Layout({ children, hideNav = false }) {
           </div>
 
           <div className="flex items-center gap-4">
+            {connected && <NotificationDropdown />}
             <WalletBalance />
             <WalletConnect />
           </div>
@@ -187,6 +211,7 @@ export default function Layout({ children, hideNav = false }) {
         <div className="text-[#00a3ff] font-bold">QuestHub</div>
 
         <div className="flex items-center gap-2">
+          {connected && <NotificationDropdown />}
           <WalletConnect />
 
           <button className="p-2" onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}>
@@ -274,6 +299,7 @@ export default function Layout({ children, hideNav = false }) {
       <main className="flex-1">
         {/* Desktop Header */}
         <div className="hidden md:flex items-center justify-end p-4 border-b border-[#252540] gap-4">
+          {connected && <NotificationDropdown />}
           <WalletBalance />
           <WalletConnect />
         </div>

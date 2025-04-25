@@ -1,13 +1,28 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
 import Image from "next/image"
 import Modal from "@/components/Modal"
 import NFTViewer from "@/components/badges/NFTViewer"
+import { useNotifications } from "@/context/NotificationContext"
 
-export default function BadgeDetailModal({ badge, onClose }) {
+export default function BadgeDetailModal({ badge, onClose, showEarnedAnimation = false }) {
   const [activeTab, setActiveTab] = useState("details") // details, attributes, nft
+  const { addBadgeEarnedNotification } = useNotifications()
+  const [showAnimation, setShowAnimation] = useState(showEarnedAnimation)
+
+  // Show notification when badge is earned
+  useEffect(() => {
+    if (showEarnedAnimation && badge.owned) {
+      // Add a slight delay before showing the notification
+      const timer = setTimeout(() => {
+        addBadgeEarnedNotification(badge)
+      }, 500)
+
+      return () => clearTimeout(timer)
+    }
+  }, [showEarnedAnimation, badge, addBadgeEarnedNotification])
 
   // Helper function to get rarity color
   const getRarityColor = (rarity) => {
@@ -51,6 +66,44 @@ export default function BadgeDetailModal({ badge, onClose }) {
                   className="object-contain max-h-40 md:max-h-56"
                 />
               )}
+
+              {/* Badge Earned Animation */}
+              <AnimatePresence>
+                {showAnimation && (
+                  <motion.div
+                    className="absolute inset-0 bg-black/50 flex items-center justify-center"
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    exit={{ opacity: 0 }}
+                    transition={{ duration: 0.5 }}
+                    onAnimationComplete={() => setShowAnimation(false)}
+                  >
+                    <motion.div
+                      className="text-center"
+                      initial={{ scale: 0.5, opacity: 0 }}
+                      animate={{ scale: 1, opacity: 1 }}
+                      transition={{ delay: 0.3, duration: 0.5, type: "spring" }}
+                    >
+                      <motion.div
+                        className="text-4xl font-bold text-[#00a3ff] mb-2"
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 0.8, duration: 0.5 }}
+                      >
+                        Badge Earned!
+                      </motion.div>
+                      <motion.div
+                        className="text-lg text-white"
+                        initial={{ y: 20, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        transition={{ delay: 1.2, duration: 0.5 }}
+                      >
+                        {badge.name}
+                      </motion.div>
+                    </motion.div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
             </div>
 
             {/* Badge Status */}
