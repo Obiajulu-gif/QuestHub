@@ -1,12 +1,14 @@
 "use client"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { WalletMultiButton } from "@solana/wallet-adapter-react-ui"
 import { motion } from "framer-motion"
+import { useAuth } from "@/context/AuthContext"
 
 export default function WalletConnect() {
   const { publicKey, wallet, disconnect, connected } = useWallet()
+  const { user, signInWithWallet } = useAuth()
   const [balance, setBalance] = useState(null)
   const [copied, setCopied] = useState(false)
   const [loading, setLoading] = useState(false)
@@ -25,6 +27,24 @@ export default function WalletConnect() {
       setTimeout(() => setCopied(false), 2000)
     }
   }
+
+  // Handle wallet connection for authentication
+  const handleWalletConnect = async () => {
+    if (connected && !user) {
+      try {
+        await signInWithWallet()
+      } catch (err) {
+        console.error("Error signing in with wallet:", err)
+      }
+    }
+  }
+
+  // When wallet connects, try to sign in
+  useEffect(() => {
+    if (connected && publicKey && !user) {
+      handleWalletConnect()
+    }
+  }, [connected, publicKey, user])
 
   // Custom styling for the wallet adapter button
   const customWalletButtonStyle = {

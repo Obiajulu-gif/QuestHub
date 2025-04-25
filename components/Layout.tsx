@@ -1,7 +1,6 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
 import { usePathname } from "next/navigation"
 import Navbar from "./Navbar"
@@ -13,7 +12,8 @@ interface LayoutProps {
   hideNav?: boolean
 }
 
-export default function LayoutWrapper({ children, hideNav = false }: LayoutProps) {
+// Define the Layout component
+function Layout({ children, hideNav = false }: LayoutProps) {
   const pathname = usePathname()
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const { connected } = useWallet()
@@ -36,3 +36,7 @@ export default function LayoutWrapper({ children, hideNav = false }: LayoutProps
     </div>
   )
 }
+
+// Export both as named and default export
+export { Layout }
+export default Layout

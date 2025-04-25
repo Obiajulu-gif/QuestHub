@@ -5,15 +5,16 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
 import { useWallet } from "@solana/wallet-adapter-react"
-import WalletConnect from "./WalletConnect"
-import WalletBalance from "./WalletBalance"
+import { useAuth } from "@/context/AuthContext"
 import NotificationDropdown from "./notifications/NotificationDropdown"
 
 const Navbar = () => {
   const pathname = usePathname()
   const { connected } = useWallet()
+  const { user, signOut } = useAuth()
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
+  const [userMenuOpen, setUserMenuOpen] = useState(false)
 
   // Handle scroll effect
   useEffect(() => {
@@ -28,6 +29,7 @@ const Navbar = () => {
   // Close mobile menu when route changes
   useEffect(() => {
     setMobileMenuOpen(false)
+    setUserMenuOpen(false)
   }, [pathname])
 
   const navItems = [
@@ -69,9 +71,67 @@ const Navbar = () => {
 
           {/* Right Side - Wallet & Notifications */}
           <div className="flex items-center gap-4">
-            {connected && <NotificationDropdown />}
-            <WalletBalance />
-            <WalletConnect />
+            {user && <NotificationDropdown />}
+
+            {user ? (
+              <div className="relative">
+                <button
+                  className="flex items-center gap-2 bg-[#151524] hover:bg-[#1e1e32] px-3 py-1.5 rounded-lg transition-colors"
+                  onClick={() => setUserMenuOpen(!userMenuOpen)}
+                >
+                  <div className="w-7 h-7 bg-gradient-to-br from-[#00a3ff] to-[#7928ca] rounded-full flex items-center justify-center text-xs font-bold">
+                    {user.username.charAt(0)}
+                  </div>
+                  <span className="text-sm hidden sm:block">{user.username}</span>
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className={`transition-transform ${userMenuOpen ? "rotate-180" : ""}`}
+                  >
+                    <polyline points="6 9 12 15 18 9"></polyline>
+                  </svg>
+                </button>
+
+                {userMenuOpen && (
+                  <div className="absolute right-0 mt-2 w-48 bg-[#151524] rounded-lg shadow-lg py-1 z-50">
+                    <Link href="/profile" className="block px-4 py-2 text-sm hover:bg-[#1e1e32] transition-colors">
+                      Profile
+                    </Link>
+                    <Link href="/settings" className="block px-4 py-2 text-sm hover:bg-[#1e1e32] transition-colors">
+                      Settings
+                    </Link>
+                    <button
+                      onClick={signOut}
+                      className="block w-full text-left px-4 py-2 text-sm text-red-400 hover:bg-[#1e1e32] transition-colors"
+                    >
+                      Sign Out
+                    </button>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <Link
+                  href="/auth/signin"
+                  className="text-sm px-4 py-1.5 rounded-lg hover:bg-[#151524] transition-colors"
+                >
+                  Sign In
+                </Link>
+                <Link
+                  href="/auth/signup"
+                  className="text-sm bg-[#00a3ff] hover:bg-[#0090e0] px-4 py-1.5 rounded-lg transition-colors"
+                >
+                  Sign Up
+                </Link>
+              </div>
+            )}
 
             {/* Mobile Menu Button */}
             <button
@@ -136,6 +196,27 @@ const Navbar = () => {
                 </Link>
               </li>
             ))}
+
+            {!user && (
+              <>
+                <li>
+                  <Link
+                    href="/auth/signin"
+                    className="block py-2 px-4 rounded-lg transition-colors hover:bg-[#151524] text-gray-300"
+                  >
+                    Sign In
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    href="/auth/signup"
+                    className="block py-2 px-4 rounded-lg transition-colors bg-[#00a3ff] text-white"
+                  >
+                    Sign Up
+                  </Link>
+                </li>
+              </>
+            )}
           </ul>
         </nav>
       </motion.div>

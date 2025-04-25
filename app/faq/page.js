@@ -2,7 +2,8 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-import Layout from "@/components/Layout"
+// Update import to use named export
+import { Layout } from "@/components/Layout"
 import Link from "next/link"
 
 // FAQ categories and questions

@@ -6,7 +6,8 @@ import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useWallet } from "@solana/wallet-adapter-react"
-import LayoutWrapper from "@/components/Layout"
+// Update import to use named export
+import { Layout } from "@/components/Layout"
 
 // Mock data for leaderboard
 const leaderboardData = [
@@ -131,7 +132,7 @@ export default function HomePage() {
   }
 
   return (
-    <LayoutWrapper>
+    <Layout>
       <div className="min-h-screen">
         {/* Hero Section with Slider */}
         <section className="relative">
@@ -141,6 +142,7 @@ export default function HomePage() {
               src={
                 heroSlides[currentSlide].image ||
                 "/placeholder.svg?height=500&width=1200&query=futuristic digital background" ||
+                "/placeholder.svg" ||
                 "/placeholder.svg"
               }
               alt={heroSlides[currentSlide].title}
@@ -747,6 +749,6 @@ export default function HomePage() {
           </section>
         </div>
       </div>
-    </LayoutWrapper>
+    </Layout>
   )
 }

@@ -2,7 +2,8 @@
 
 import { useState } from "react"
 import { motion } from "framer-motion"
-import Layout from "@/components/Layout"
+// Update import to use named export
+import { Layout } from "@/components/Layout"
 import QuestCard from "@/components/QuestCard"
 
 const questCategories = [
@@ -53,7 +54,7 @@ const quests = [
   {
     id: 4,
     title: "Solve the AI Riddle",
-    image: "/placeholder.svg?height=200&width=200&query=puzzle piece on blue background",
+    image: "/single-puzzle-piece.png",
     category: "riddle",
     level: "lvl1",
     time: "15 min",
@@ -73,7 +74,7 @@ const quests = [
   {
     id: 6,
     title: "Solve the AI Riddle",
-    image: "/placeholder.svg?height=200&width=200&query=puzzle piece on blue background",
+    image: "/single-puzzle-piece.png",
     category: "riddle",
     level: "lvl2",
     time: "10 min",
@@ -93,7 +94,7 @@ const quests = [
   {
     id: 8,
     title: "Solve the AI Riddle",
-    image: "/placeholder.svg?height=200&width=200&query=brain with weights",
+    image: "/weighted-mind.png",
     category: "riddle",
     level: "lvl3",
     time: "15 min",

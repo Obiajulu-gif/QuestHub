@@ -4,7 +4,8 @@ import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { motion } from "framer-motion"
 import { useWallet } from "@solana/wallet-adapter-react"
-import Layout from "@/components/Layout"
+// Update import to use named export
+import { Layout } from "@/components/Layout"
 import Image from "next/image"
 import WalletConnect from "@/components/WalletConnect"
 
