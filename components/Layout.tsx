@@ -1,42 +1,20 @@
-"use client"
-
 import type React from "react"
-import { useState, useEffect } from "react"
-import { usePathname } from "next/navigation"
 import Navbar from "./Navbar"
+// Import Footer as default instead of named import
 import Footer from "./Footer"
-import { useWallet } from "@solana/wallet-adapter-react"
 
 interface LayoutProps {
   children: React.ReactNode
-  hideNav?: boolean
 }
 
-// Define the Layout component
-function Layout({ children, hideNav = false }: LayoutProps) {
-  const pathname = usePathname()
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
-  const { connected } = useWallet()
-
-  // Close mobile menu when route changes
-  useEffect(() => {
-    setIsMobileMenuOpen(false)
-  }, [pathname])
-
+export const Layout = ({ children }: LayoutProps) => {
   return (
-    <div className="flex flex-col min-h-screen bg-[#0a0a14]">
-      {/* Navbar */}
-      {!hideNav && <Navbar />}
-
-      {/* Main Content */}
-      <main className="flex-1 pt-16">{children}</main>
-
-      {/* Footer */}
-      {!hideNav && <Footer />}
+    <div className="flex flex-col min-h-screen">
+      <Navbar />
+      <main className="flex-grow">{children}</main>
+      <Footer />
     </div>
   )
 }
 
-// Export both as named and default export
-export { Layout }
 export default Layout

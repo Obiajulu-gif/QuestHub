@@ -1,13 +1,13 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
+import { useState, useEffect, useRef } from "react"
+import { motion, useAnimation, useInView } from "framer-motion"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import { useWallet } from "@solana/wallet-adapter-react"
-// Update import to use named export
 import { Layout } from "@/components/Layout"
+import { useAuth } from "@/context/AuthContext"
 
 // Mock data for leaderboard
 const leaderboardData = [
@@ -95,12 +95,188 @@ const heroSlides = [
   },
 ]
 
+// How it works steps
+const howItWorksSteps = [
+  {
+    id: 1,
+    title: "Create an Account",
+    description: "Sign up with email or connect your wallet to get started",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-[#00a3ff]"
+      >
+        <path d="M19 21v-2a4 4 0 0 0-4-4H9a4 4 0 0 0-4 4v2"></path>
+        <circle cx="12" cy="7" r="4"></circle>
+      </svg>
+    ),
+    image: "/placeholder.svg?key=m41tr",
+  },
+  {
+    id: 2,
+    title: "Choose Your Quests",
+    description: "Browse available quests and select ones that match your interests and skills",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-[#7928ca]"
+      >
+        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+        <polyline points="22 4 12 14.01 9 11.01"></polyline>
+      </svg>
+    ),
+    image: "/placeholder.svg?key=j6syj",
+  },
+  {
+    id: 3,
+    title: "Complete Challenges",
+    description: "Solve puzzles, answer questions, and complete tasks to earn points",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-[#ff3d71]"
+      >
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+      </svg>
+    ),
+    image: "/placeholder.svg?key=y2nqs",
+  },
+  {
+    id: 4,
+    title: "Earn Rewards",
+    description: "Collect NFT badges, earn cryptocurrency, and climb the leaderboard",
+    icon: (
+      <svg
+        xmlns="http://www.w3.org/2000/svg"
+        width="24"
+        height="24"
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        strokeWidth="2"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        className="text-[#ffc107]"
+      >
+        <circle cx="12" cy="8" r="7"></circle>
+        <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+      </svg>
+    ),
+    image: "/placeholder.svg?key=t6by7",
+  },
+]
+
+// Testimonials data
+const testimonials = [
+  {
+    id: 1,
+    name: "Alex Thompson",
+    role: "Crypto Enthusiast",
+    avatar: "/placeholder.svg?key=blqch",
+    content:
+      "QuestHub has completely transformed how I engage with learning. The quests are challenging and the rewards make it worth the effort!",
+    rating: 5,
+  },
+  {
+    id: 2,
+    name: "Sarah Chen",
+    role: "Blockchain Developer",
+    avatar: "/placeholder.svg?key=j71b2",
+    content:
+      "I've earned several NFT badges that I proudly display in my collection. The platform makes learning about blockchain fun and rewarding.",
+    rating: 5,
+  },
+  {
+    id: 3,
+    name: "Michael Rodriguez",
+    role: "Student",
+    avatar: "/placeholder.svg?key=ucc0o",
+    content:
+      "The competitive aspect of QuestHub keeps me coming back. I love seeing my name climb up the leaderboard as I complete more quests.",
+    rating: 4,
+  },
+]
+
+// Animation variants
+const fadeIn = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.6 } },
+}
+
+const staggerContainer = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.2,
+    },
+  },
+}
+
 export default function HomePage() {
   const router = useRouter()
   const { connected } = useWallet()
+  const { user } = useAuth()
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState("all")
   const [currentSlide, setCurrentSlide] = useState(0)
+  const [activeTestimonial, setActiveTestimonial] = useState(0)
+
+  // Refs for scroll animations
+  const featuresRef = useRef(null)
+  const howItWorksRef = useRef(null)
+  const testimonialsRef = useRef(null)
+  const questsRef = useRef(null)
+
+  const featuresInView = useInView(featuresRef, { once: true, amount: 0.3 })
+  const howItWorksInView = useInView(howItWorksRef, { once: true, amount: 0.3 })
+  const testimonialsInView = useInView(testimonialsRef, { once: true, amount: 0.3 })
+  const questsInView = useInView(questsRef, { once: true, amount: 0.3 })
+
+  const featuresControls = useAnimation()
+  const howItWorksControls = useAnimation()
+  const testimonialsControls = useAnimation()
+  const questsControls = useAnimation()
+
+  useEffect(() => {
+    if (featuresInView) featuresControls.start("visible")
+    if (howItWorksInView) howItWorksControls.start("visible")
+    if (testimonialsInView) testimonialsControls.start("visible")
+    if (questsInView) questsControls.start("visible")
+  }, [
+    featuresInView,
+    howItWorksInView,
+    testimonialsInView,
+    questsInView,
+    featuresControls,
+    howItWorksControls,
+    testimonialsControls,
+    questsControls,
+  ])
 
   useEffect(() => {
     // Simulate loading
@@ -116,6 +292,15 @@ export default function HomePage() {
     const interval = setInterval(() => {
       setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
     }, 5000)
+
+    return () => clearInterval(interval)
+  }, [])
+
+  // Auto-advance testimonials
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setActiveTestimonial((prev) => (prev + 1) % testimonials.length)
+    }, 8000)
 
     return () => clearInterval(interval)
   }, [])
@@ -136,12 +321,12 @@ export default function HomePage() {
       <div className="min-h-screen">
         {/* Hero Section with Slider */}
         <section className="relative">
-          <div className="relative w-full h-[400px] md:h-[500px] overflow-hidden">
-            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a14] to-transparent z-10"></div>
+          <div className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden">
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a14] via-[#0a0a14]/70 to-transparent z-10"></div>
             <Image
               src={
                 heroSlides[currentSlide].image ||
-                "/placeholder.svg?height=500&width=1200&query=futuristic digital background" ||
+                "/placeholder.svg?height=700&width=1920&query=futuristic digital quest background with glowing elements" ||
                 "/placeholder.svg" ||
                 "/placeholder.svg"
               }
@@ -156,7 +341,7 @@ export default function HomePage() {
               <div className="container mx-auto px-4 md:px-6">
                 <div className="max-w-lg">
                   <motion.h1
-                    className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4"
+                    className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
@@ -164,7 +349,7 @@ export default function HomePage() {
                     {heroSlides[currentSlide].title}
                   </motion.h1>
                   <motion.p
-                    className="text-gray-300 mb-6"
+                    className="text-gray-300 text-lg mb-8"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 }}
@@ -175,13 +360,22 @@ export default function HomePage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.6 }}
+                    className="flex flex-wrap gap-4"
                   >
                     <Link
                       href={heroSlides[currentSlide].ctaLink}
-                      className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-2 px-6 rounded-lg transition-all duration-200 inline-block"
+                      className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 inline-block"
                     >
                       {heroSlides[currentSlide].ctaText}
                     </Link>
+                    {!user && (
+                      <Link
+                        href="/auth/signup"
+                        className="bg-transparent border border-white hover:bg-white/10 text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 inline-block"
+                      >
+                        GET STARTED
+                      </Link>
+                    )}
                   </motion.div>
                 </div>
               </div>
@@ -189,7 +383,7 @@ export default function HomePage() {
           </div>
 
           {/* Dots Navigation */}
-          <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30 flex space-x-2">
+          <div className="absolute bottom-8 left-1/2 transform -translate-x-1/2 z-30 flex space-x-2">
             {heroSlides.map((_, index) => (
               <button
                 key={index}
@@ -202,15 +396,194 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* Stats Banner */}
+        <section className="bg-gradient-to-r from-[#151524] to-[#1e1e32] py-8 border-y border-[#252540]">
+          <div className="container mx-auto px-4 md:px-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+              <div className="flex flex-col items-center">
+                <div className="text-3xl md:text-4xl font-bold text-white mb-2">10K+</div>
+                <div className="text-gray-400 text-sm">Active Users</div>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="text-3xl md:text-4xl font-bold text-white mb-2">500+</div>
+                <div className="text-gray-400 text-sm">Quests Available</div>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="text-3xl md:text-4xl font-bold text-white mb-2">50K+</div>
+                <div className="text-gray-400 text-sm">NFT Badges Minted</div>
+              </div>
+              <div className="flex flex-col items-center">
+                <div className="text-3xl md:text-4xl font-bold text-white mb-2">1M+</div>
+                <div className="text-gray-400 text-sm">SOL Rewarded</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* Main Content */}
-        <div className="px-4 py-8 md:px-6 max-w-7xl mx-auto">
+        <div className="px-4 py-16 md:px-6 max-w-7xl mx-auto">
+          {/* Features Section */}
+          <motion.section
+            ref={featuresRef}
+            initial="hidden"
+            animate={featuresControls}
+            variants={staggerContainer}
+            className="mb-24"
+          >
+            <div className="text-center mb-16">
+              <motion.h2 variants={fadeIn} className="text-3xl md:text-4xl font-bold mb-4">
+                Why Choose QuestHub?
+              </motion.h2>
+              <motion.p variants={fadeIn} className="text-gray-400 max-w-2xl mx-auto">
+                QuestHub combines learning, gaming, and blockchain technology to create a unique experience where your
+                achievements have real value.
+              </motion.p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              <motion.div variants={fadeIn} className="bg-[#151524] rounded-xl p-8 text-center">
+                <div className="w-16 h-16 bg-[#00a3ff]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-[#00a3ff]"
+                  >
+                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-4">Challenging Quests</h3>
+                <p className="text-gray-400">
+                  Test your knowledge with our diverse range of quests designed to challenge your intellect and expand
+                  your skills.
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-[#151524] rounded-xl p-8 text-center">
+                <div className="w-16 h-16 bg-[#7928ca]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-[#7928ca]"
+                  >
+                    <circle cx="12" cy="8" r="7"></circle>
+                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-4">NFT Badges</h3>
+                <p className="text-gray-400">
+                  Collect unique NFT badges as proof of your achievements and showcase them in your profile or trade
+                  them on marketplaces.
+                </p>
+              </motion.div>
+
+              <motion.div variants={fadeIn} className="bg-[#151524] rounded-xl p-8 text-center">
+                <div className="w-16 h-16 bg-[#ff3d71]/20 rounded-full flex items-center justify-center mx-auto mb-6">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="28"
+                    height="28"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    className="text-[#ff3d71]"
+                  >
+                    <circle cx="12" cy="12" r="10"></circle>
+                    <line x1="12" y1="8" x2="12" y2="12"></line>
+                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
+                  </svg>
+                </div>
+                <h3 className="text-xl font-semibold mb-4">Crypto Rewards</h3>
+                <p className="text-gray-400">
+                  Complete quests and competitions to earn SOL rewards and climb the leaderboard for additional prizes.
+                </p>
+              </motion.div>
+            </div>
+          </motion.section>
+
+          {/* How It Works Section */}
+          <motion.section
+            ref={howItWorksRef}
+            initial="hidden"
+            animate={howItWorksControls}
+            variants={staggerContainer}
+            className="mb-24"
+          >
+            <div className="text-center mb-16">
+              <motion.h2 variants={fadeIn} className="text-3xl md:text-4xl font-bold mb-4">
+                How It Works
+              </motion.h2>
+              <motion.p variants={fadeIn} className="text-gray-400 max-w-2xl mx-auto">
+                Getting started with QuestHub is easy. Follow these simple steps to begin your journey.
+              </motion.p>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+              {howItWorksSteps.map((step, index) => (
+                <motion.div key={step.id} variants={fadeIn} className="flex flex-col items-center text-center">
+                  <div className="relative">
+                    <div className="w-20 h-20 bg-[#151524] rounded-full flex items-center justify-center mb-6 z-10 relative">
+                      {step.icon}
+                    </div>
+                    {index < howItWorksSteps.length - 1 && (
+                      <div className="hidden md:block absolute top-10 left-full w-full h-0.5 bg-gradient-to-r from-[#00a3ff] to-transparent -z-10 transform -translate-x-10"></div>
+                    )}
+                  </div>
+                  <div className="bg-[#151524] rounded-xl p-6 w-full">
+                    <div className="w-full h-40 relative mb-6 overflow-hidden rounded-lg">
+                      <Image src={step.image || "/placeholder.svg"} alt={step.title} fill className="object-cover" />
+                    </div>
+                    <h3 className="text-xl font-semibold mb-2">{step.title}</h3>
+                    <p className="text-gray-400">{step.description}</p>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+
+            <div className="text-center mt-12">
+              <motion.div variants={fadeIn}>
+                {user ? (
+                  <Link
+                    href="/quests"
+                    className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 inline-block"
+                  >
+                    EXPLORE QUESTS
+                  </Link>
+                ) : (
+                  <Link
+                    href="/auth/signup"
+                    className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-3 px-8 rounded-lg transition-all duration-200 inline-block"
+                  >
+                    GET STARTED NOW
+                  </Link>
+                )}
+              </motion.div>
+            </div>
+          </motion.section>
+
           {/* Leaderboard and Community Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-12">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-24">
             {/* Leaderboard */}
             <div className="lg:col-span-2">
-              <div className="bg-[#151524] rounded-xl p-4">
-                <div className="flex items-center justify-between mb-4">
-                  <h2 className="text-xl font-bold">Leaderboard</h2>
+              <div className="bg-[#151524] rounded-xl p-6">
+                <div className="flex items-center justify-between mb-6">
+                  <h2 className="text-2xl font-bold">Leaderboard</h2>
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
                       <span className="text-sm text-gray-400">Filter By:</span>
@@ -226,9 +599,9 @@ export default function HomePage() {
                   <table className="w-full">
                     <thead>
                       <tr className="text-left text-gray-400 text-sm border-b border-[#252540]">
-                        <th className="pb-2 font-normal">Rank</th>
-                        <th className="pb-2 font-normal">Player</th>
-                        <th className="pb-2 font-normal text-right">Points</th>
+                        <th className="pb-4 font-normal">Rank</th>
+                        <th className="pb-4 font-normal">Player</th>
+                        <th className="pb-4 font-normal text-right">Points</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -240,7 +613,7 @@ export default function HomePage() {
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: index * 0.1 }}
                         >
-                          <td className="py-3">
+                          <td className="py-4">
                             {item.rank === 1 && (
                               <span className="text-[#ffc107] flex items-center">
                                 <svg
@@ -312,9 +685,12 @@ export default function HomePage() {
                             )}
                             {item.rank > 3 && <span className="text-gray-400">{item.rank}</span>}
                           </td>
-                          <td className="py-3">
+                          <td className="py-4">
                             <div className="flex items-center gap-2">
-                              <div className="w-8 h-8 rounded-full bg-[#252540] flex items-center justify-center text-xs overflow-hidden">
+                              <div
+                                className="w-8 h-8 rounded-full bg-[#252540]
+ flex items-center justify-center text-xs overflow-hidden"
+                              >
                                 {item.avatar ? (
                                   <Image
                                     src={item.avatar || "/placeholder.svg"}
@@ -330,22 +706,22 @@ export default function HomePage() {
                               <span>{item.profile}</span>
                             </div>
                           </td>
-                          <td className="py-3 text-right">{item.points.toLocaleString()}</td>
+                          <td className="py-4 text-right">{item.points.toLocaleString()}</td>
                         </motion.tr>
                       ))}
                     </tbody>
                   </table>
                 </div>
-                <div className="mt-4 text-center">
-                  <button className="text-[#00a3ff] text-sm hover:underline">View All</button>
+                <div className="mt-6 text-center">
+                  <button className="text-[#00a3ff] text-sm hover:underline">View Full Leaderboard</button>
                 </div>
               </div>
             </div>
 
             {/* Community Section */}
             <div className="lg:col-span-1">
-              <div className="bg-[#151524] rounded-xl p-4">
-                <h2 className="text-xl font-bold mb-4">Community</h2>
+              <div className="bg-[#151524] rounded-xl p-6">
+                <h2 className="text-2xl font-bold mb-6">Community</h2>
 
                 {/* Online Members */}
                 <div className="mb-6">
@@ -374,7 +750,7 @@ export default function HomePage() {
                 {/* Recent Activity */}
                 <div>
                   <h3 className="text-sm font-medium text-gray-400 mb-3">Recent Activity</h3>
-                  <div className="space-y-3">
+                  <div className="space-y-4">
                     {[
                       {
                         id: 1,
@@ -401,7 +777,7 @@ export default function HomePage() {
                       },
                       {
                         id: 2,
-                        user: "PuzzlePro",
+                        user: "BadgeCollector",
                         action: "earned the Logic Master badge",
                         time: "20 min ago",
                         icon: (
@@ -471,24 +847,127 @@ export default function HomePage() {
                 </div>
 
                 {/* View All Button */}
-                <div className="mt-4 text-center">
+                <div className="mt-6 text-center">
                   <button className="text-[#00a3ff] text-sm hover:underline">View All Activity</button>
                 </div>
               </div>
             </div>
           </div>
 
+          {/* Testimonials Section */}
+          <motion.section
+            ref={testimonialsRef}
+            initial="hidden"
+            animate={testimonialsControls}
+            variants={staggerContainer}
+            className="mb-24"
+          >
+            <div className="text-center mb-16">
+              <motion.h2 variants={fadeIn} className="text-3xl md:text-4xl font-bold mb-4">
+                What Our Users Say
+              </motion.h2>
+              <motion.p variants={fadeIn} className="text-gray-400 max-w-2xl mx-auto">
+                Join thousands of satisfied users who are already enjoying QuestHub's unique experience.
+              </motion.p>
+            </div>
+
+            <div className="relative">
+              <div className="overflow-hidden">
+                <div
+                  className="flex transition-transform duration-500 ease-in-out"
+                  style={{ transform: `translateX(-${activeTestimonial * 100}%)` }}
+                >
+                  {testimonials.map((testimonial) => (
+                    <div key={testimonial.id} className="w-full flex-shrink-0 px-4">
+                      <motion.div variants={fadeIn} className="bg-[#151524] rounded-xl p-8 md:p-10">
+                        <div className="flex flex-col md:flex-row md:items-center gap-6 mb-6">
+                          <div className="w-16 h-16 rounded-full overflow-hidden">
+                            <Image
+                              src={testimonial.avatar || "/placeholder.svg"}
+                              alt={testimonial.name}
+                              width={64}
+                              height={64}
+                              className="object-cover"
+                            />
+                          </div>
+                          <div>
+                            <h4 className="text-xl font-semibold">{testimonial.name}</h4>
+                            <p className="text-gray-400">{testimonial.role}</p>
+                            <div className="flex text-[#ffc107] mt-1">
+                              {[...Array(5)].map((_, i) => (
+                                <svg
+                                  key={i}
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  viewBox="0 0 24 24"
+                                  fill={i < testimonial.rating ? "currentColor" : "none"}
+                                  stroke="currentColor"
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                >
+                                  <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+                                </svg>
+                              ))}
+                            </div>
+                          </div>
+                        </div>
+                        <p className="text-lg text-gray-300 italic">&ldquo;{testimonial.content}&rdquo;</p>
+                      </motion.div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              <div className="flex justify-center mt-8 gap-2">
+                {testimonials.map((_, index) => (
+                  <button
+                    key={index}
+                    className={`w-2 h-2 rounded-full transition-all ${
+                      index === activeTestimonial ? "bg-[#00a3ff] w-6" : "bg-gray-500"
+                    }`}
+                    onClick={() => setActiveTestimonial(index)}
+                  />
+                ))}
+              </div>
+            </div>
+          </motion.section>
+
           {/* All Tests/Quests Section */}
-          <section className="mb-12">
-            <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold">All Tests</h2>
-              <Link href="/quests" className="text-[#00a3ff] text-sm hover:underline">
-                View All
-              </Link>
+          <motion.section
+            ref={questsRef}
+            initial="hidden"
+            animate={questsControls}
+            variants={staggerContainer}
+            className="mb-24"
+          >
+            <div className="flex items-center justify-between mb-8">
+              <motion.h2 variants={fadeIn} className="text-2xl md:text-3xl font-bold">
+                Popular Quests
+              </motion.h2>
+              <motion.div variants={fadeIn}>
+                <Link href="/quests" className="text-[#00a3ff] text-sm hover:underline flex items-center gap-1">
+                  View All
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <polyline points="9 18 15 12 9 6"></polyline>
+                  </svg>
+                </Link>
+              </motion.div>
             </div>
 
             {/* Category Tabs */}
-            <div className="flex overflow-x-auto pb-2 mb-6 gap-2 hide-scrollbar">
+            <motion.div variants={fadeIn} className="flex overflow-x-auto pb-2 mb-8 gap-2 hide-scrollbar">
               {["all", "quiz", "riddle", "challenge", "puzzle"].map((category) => (
                 <button
                   key={category}
@@ -500,96 +979,101 @@ export default function HomePage() {
                   {category.charAt(0).toUpperCase() + category.slice(1)}
                 </button>
               ))}
-            </div>
+            </motion.div>
 
             {/* Quest Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
               {questsData
                 .filter((quest) => activeTab === "all" || quest.category === activeTab)
                 .map((quest) => (
                   <motion.div
                     key={quest.id}
-                    initial={{ opacity: 0, y: 20 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
+                    variants={fadeIn}
+                    className="bg-[#151524] rounded-xl overflow-hidden cursor-pointer hover:shadow-lg hover:shadow-[#1e1e32]/20 hover:translate-y-[-2px] transition-all duration-300"
                   >
-                    <div className="bg-[#151524] rounded-xl overflow-hidden cursor-pointer hover:shadow-lg hover:shadow-[#1e1e32]/20 hover:translate-y-[-2px] transition-all duration-300">
-                      <div className="relative h-36">
-                        <Image
-                          src={quest.image || "/placeholder.svg?height=200&width=200&query=quest background with brain"}
-                          alt={quest.title}
-                          fill
-                          className="object-cover"
-                        />
+                    <div className="relative h-40">
+                      <Image
+                        src={quest.image || "/placeholder.svg?height=200&width=200&query=quest background with brain"}
+                        alt={quest.title}
+                        fill
+                        className="object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] to-transparent"></div>
+                      <div className="absolute bottom-3 left-3">
+                        <span className="bg-[#00a3ff]/80 text-white text-xs px-2 py-1 rounded-md">
+                          {quest.difficulty}
+                        </span>
                       </div>
-                      <div className="p-3">
-                        <h3 className="font-medium text-sm mb-2 line-clamp-1">{quest.title}</h3>
-                        <div className="flex items-center justify-between text-xs text-gray-400">
+                      <div className="absolute bottom-3 right-3">
+                        <span className="bg-[#252540]/80 text-white text-xs px-2 py-1 rounded-md">
+                          {quest.category}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="p-4">
+                      <h3 className="font-medium text-lg mb-2 line-clamp-1">{quest.title}</h3>
+                      <div className="flex items-center justify-between text-xs text-gray-400">
+                        <div className="flex items-center gap-2">
                           <div className="flex items-center gap-1">
-                            <span>{quest.difficulty}</span>
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                              <circle cx="9" cy="7" r="4"></circle>
+                            </svg>
+                            <span>{quest.participants.toLocaleString()}</span>
                           </div>
-                          <div className="flex items-center gap-2">
-                            <div className="flex items-center gap-1">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                                <circle cx="9" cy="7" r="4"></circle>
-                              </svg>
-                              <span>{quest.participants}</span>
-                            </div>
-                            <div className="flex items-center gap-1">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="12"
-                                height="12"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                              >
-                                <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
-                              </svg>
-                              <span>{quest.likes}</span>
-                            </div>
+                          <div className="flex items-center gap-1">
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              width="12"
+                              height="12"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth="2"
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"></path>
+                            </svg>
+                            <span>{quest.likes}</span>
                           </div>
                         </div>
                       </div>
-                      <div className="absolute bottom-2 right-2 bg-[#00a3ff] rounded-full p-1">
-                        <svg
-                          xmlns="http://www.w3.org/2000/svg"
-                          width="14"
-                          height="14"
-                          viewBox="0 0 24 24"
-                          fill="none"
-                          stroke="currentColor"
-                          strokeWidth="2"
-                          strokeLinecap="round"
-                          strokeLinejoin="round"
-                          className="text-white"
-                        >
-                          <polyline points="9 18 15 12 9 6"></polyline>
-                        </svg>
-                      </div>
+                    </div>
+                    <div className="absolute bottom-4 right-4 bg-[#00a3ff] rounded-full p-1">
+                      <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        width="14"
+                        height="14"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        strokeWidth="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        className="text-white"
+                      >
+                        <polyline points="9 18 15 12 9 6"></polyline>
+                      </svg>
                     </div>
                   </motion.div>
                 ))}
             </div>
-          </section>
+          </motion.section>
 
           {/* CTA Banner */}
-          <section className="relative mb-12 overflow-hidden rounded-xl">
-            <div className="relative h-48 md:h-64 bg-gradient-to-r from-[#151524] to-[#252540] rounded-xl overflow-hidden">
+          <section className="relative mb-24 overflow-hidden rounded-xl">
+            <div className="relative h-64 md:h-80 bg-gradient-to-r from-[#151524] to-[#252540] rounded-xl overflow-hidden">
               <Image
                 src="/cta-background.png"
                 alt="Join the community"
@@ -597,152 +1081,64 @@ export default function HomePage() {
                 className="object-cover opacity-40 mix-blend-overlay"
               />
               <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center px-4">
-                  <h2 className="text-2xl md:text-3xl font-bold mb-4">Explore More Challenges</h2>
-                  <button className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-2 px-6 rounded-lg transition-all duration-200">
-                    Browse All Categories
-                  </button>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* Features Section */}
-          <section className="mb-12">
-            <h2 className="text-xl font-bold mb-6">Why Choose QuestHub?</h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-[#151524] rounded-xl p-6 text-center">
-                <div className="w-16 h-16 bg-[#00a3ff]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="28"
-                    height="28"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-[#00a3ff]"
-                  >
-                    <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path>
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Challenging Quests</h3>
-                <p className="text-gray-400 text-sm">
-                  Test your knowledge with our diverse range of quests designed to challenge your intellect.
-                </p>
-              </div>
-
-              <div className="bg-[#151524] rounded-xl p-6 text-center">
-                <div className="w-16 h-16 bg-[#7928ca]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="28"
-                    height="28"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-[#7928ca]"
-                  >
-                    <circle cx="12" cy="8" r="7"></circle>
-                    <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Earn NFT Badges</h3>
-                <p className="text-gray-400 text-sm">
-                  Collect unique NFT badges as proof of your achievements and showcase them in your profile.
-                </p>
-              </div>
-
-              <div className="bg-[#151524] rounded-xl p-6 text-center">
-                <div className="w-16 h-16 bg-[#ff3d71]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="28"
-                    height="28"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-[#ff3d71]"
-                  >
-                    <circle cx="12" cy="12" r="10"></circle>
-                    <line x1="12" y1="8" x2="12" y2="12"></line>
-                    <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                  </svg>
-                </div>
-                <h3 className="text-lg font-semibold mb-2">Win Rewards</h3>
-                <p className="text-gray-400 text-sm">
-                  Complete quests and competitions to earn SOL rewards and climb the leaderboard.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Testimonials */}
-          <section className="mb-12">
-            <h2 className="text-xl font-bold mb-6">What Our Users Say</h2>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[1, 2, 3].map((i) => (
-                <div key={i} className="bg-[#151524] rounded-xl p-6">
-                  <div className="flex items-center gap-3 mb-4">
-                    <div className="w-12 h-12 rounded-full bg-gradient-to-br from-[#00a3ff] to-[#7928ca]"></div>
-                    <div>
-                      <h4 className="font-medium">User{i}</h4>
-                      <div className="flex text-[#ffc107]">
-                        {[...Array(5)].map((_, j) => (
-                          <svg
-                            key={j}
-                            xmlns="http://www.w3.org/2000/svg"
-                            width="12"
-                            height="12"
-                            viewBox="0 0 24 24"
-                            fill="currentColor"
-                            stroke="currentColor"
-                            strokeWidth="2"
-                            strokeLinecap="round"
-                            strokeLinejoin="round"
-                          >
-                            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
-                          </svg>
-                        ))}
-                      </div>
-                    </div>
-                  </div>
-                  <p className="text-gray-300 text-sm">
-                    "QuestHub has completely transformed how I engage with learning. The quests are challenging and the
-                    rewards make it worth the effort!"
+                <div className="text-center px-4 max-w-2xl">
+                  <h2 className="text-2xl md:text-4xl font-bold mb-4">Ready to Start Your Quest Journey?</h2>
+                  <p className="text-gray-300 mb-8">
+                    Join thousands of users who are already earning rewards, collecting NFT badges, and climbing the
+                    leaderboard.
                   </p>
+                  <div className="flex flex-wrap justify-center gap-4">
+                    {user ? (
+                      <Link
+                        href="/quests"
+                        className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-3 px-8 rounded-lg transition-all duration-200"
+                      >
+                        EXPLORE QUESTS
+                      </Link>
+                    ) : (
+                      <>
+                        <Link
+                          href="/auth/signup"
+                          className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-3 px-8 rounded-lg transition-all duration-200"
+                        >
+                          SIGN UP NOW
+                        </Link>
+                        <Link
+                          href="/auth/signin"
+                          className="bg-transparent border border-white hover:bg-white/10 text-white font-medium py-3 px-8 rounded-lg transition-all duration-200"
+                        >
+                          SIGN IN
+                        </Link>
+                      </>
+                    )}
+                  </div>
                 </div>
-              ))}
+              </div>
             </div>
           </section>
 
           {/* Newsletter */}
           <section className="mb-12">
-            <div className="bg-[#151524] rounded-xl p-6 md:p-8">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-                <div>
-                  <h2 className="text-xl font-bold mb-2">Stay Updated</h2>
-                  <p className="text-gray-400">Subscribe to our newsletter for the latest quests and rewards.</p>
-                </div>
-                <div className="w-full md:w-auto">
+            <div className="bg-[#151524] rounded-xl p-8 md:p-10">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-8">
+                <div className="md:max-w-md">
+                  <h2 className="text-2xl font-bold mb-4">Stay Updated</h2>
+                  <p className="text-gray-400 mb-4">
+                    Subscribe to our newsletter for the latest quests, rewards, and platform updates.
+                  </p>
                   <div className="flex flex-col sm:flex-row gap-3">
                     <input
                       type="email"
                       placeholder="Enter your email"
-                      className="bg-[#0a0a14] border border-[#252540] rounded-lg px-4 py-2 focus:outline-none focus:border-[#00a3ff] w-full sm:w-64"
+                      className="bg-[#0a0a14] border border-[#252540] rounded-lg px-4 py-3 focus:outline-none focus:border-[#00a3ff] w-full sm:w-64"
                     />
-                    <button className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-2 px-4 rounded-lg transition-all duration-200">
+                    <button className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-3 px-6 rounded-lg transition-all duration-200 whitespace-nowrap">
                       Subscribe
                     </button>
                   </div>
+                </div>
+                <div className="relative w-full md:w-80 h-48">
+                  <Image src="/placeholder.svg?key=cb90d" alt="Newsletter" fill className="object-cover rounded-lg" />
                 </div>
               </div>
             </div>

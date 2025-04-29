@@ -1,92 +1,21 @@
 "use client"
 
-import { useState, useEffect } from "react"
-import { useWallet } from "@solana/wallet-adapter-react"
-import { WalletMultiButton } from "@solana/wallet-adapter-react-ui"
-import { motion } from "framer-motion"
-import { useAuth } from "@/context/AuthContext"
-
-export default function WalletConnect() {
-  const { publicKey, wallet, disconnect, connected } = useWallet()
-  const { user, signInWithWallet } = useAuth()
-  const [balance, setBalance] = useState(null)
-  const [copied, setCopied] = useState(false)
-  const [loading, setLoading] = useState(false)
-
-  // Format the wallet address to show only the first and last few characters
-  const formatWalletAddress = (address) => {
-    if (!address) return ""
-    return `${address.toString().slice(0, 4)}...${address.toString().slice(-4)}`
-  }
-
-  // Copy wallet address to clipboard
-  const copyWalletAddress = () => {
-    if (publicKey) {
-      navigator.clipboard.writeText(publicKey.toString())
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
-
-  // Handle wallet connection for authentication
-  const handleWalletConnect = async () => {
-    if (connected && !user) {
-      try {
-        await signInWithWallet()
-      } catch (err) {
-        console.error("Error signing in with wallet:", err)
-      }
-    }
-  }
-
-  // When wallet connects, try to sign in
-  useEffect(() => {
-    if (connected && publicKey && !user) {
-      handleWalletConnect()
-    }
-  }, [connected, publicKey, user])
-
-  // Custom styling for the wallet adapter button
-  const customWalletButtonStyle = {
-    "--wallet-adapter-button-bg": "#00a3ff",
-    "--wallet-adapter-button-color": "white",
-    "--wallet-adapter-button-hover-bg": "#0090e0",
-    "--wallet-adapter-button-active-bg": "#0080c0",
-  }
-
+export default function WalletConnect({ fullWidth }) {
   return (
-    <div className="relative">
-      {connected ? (
-        <div className="flex items-center gap-2">
-          <div
-            className="flex items-center gap-2 bg-[#151524] px-3 py-2 rounded-lg cursor-pointer hover:bg-[#1e1e32] transition-colors"
-            onClick={copyWalletAddress}
-          >
-            <div className="w-2 h-2 rounded-full bg-green-500"></div>
-            <span className="text-sm font-medium">{formatWalletAddress(publicKey)}</span>
-            {copied && (
-              <motion.div
-                className="absolute top-full mt-2 right-0 bg-[#252540] text-white text-xs py-1 px-2 rounded"
-                initial={{ opacity: 0, y: -5 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0 }}
-              >
-                Copied!
-              </motion.div>
-            )}
-          </div>
-          <button
-            className="text-xs bg-[#151524] hover:bg-[#1e1e32] text-red-400 px-2 py-1 rounded-lg transition-colors"
-            onClick={disconnect}
-          >
-            Disconnect
-          </button>
-        </div>
-      ) : (
-        <div style={customWalletButtonStyle}>
-          <WalletMultiButton className="!bg-[#00a3ff] hover:!bg-[#0090e0] !transition-all" />
-        </div>
-      )}
-    </div>
+    <button
+      className={`flex items-center justify-center bg-[#252540] hover:bg-[#2a2a4a] text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 ${fullWidth ? "w-full" : ""}`}
+      onClick={() => {
+        // Connect wallet logic would go here
+        console.log("Connecting wallet...")
+      }}
+    >
+      <svg className="w-5 h-5 mr-2" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path
+          d="M19.97 6.43L12 2L4.03 6.43L12 10.85L19.97 6.43ZM20 7.56V16.43L12.03 20.85L4.03 16.43V7.56L12 11.98L20 7.56Z"
+          fill="currentColor"
+        />
+      </svg>
+      Connect Wallet
+    </button>
   )
 }

@@ -1,94 +1,74 @@
 "use client"
 
-import type React from "react"
-
 import { useState } from "react"
-import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
-import { useAuth } from "@/context/AuthContext"
+import Link from "next/link"
+import Image from "next/image"
 import { Layout } from "@/components/Layout"
+import { useAuth } from "@/context/AuthContext"
+import WalletConnect from "@/components/WalletConnect"
 
 export default function SignUp() {
-  const [email, setEmail] = useState("")
+  const router = useRouter()
+  const { signUp } = useAuth()
   const [username, setUsername] = useState("")
+  const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [confirmPassword, setConfirmPassword] = useState("")
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [validationError, setValidationError] = useState("")
-  const { signUpWithEmail, signInWithWallet, error } = useAuth()
-  const router = useRouter()
+  const [error, setError] = useState("")
+  const [loading, setLoading] = useState(false)
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleSubmit = async (e) => {
     e.preventDefault()
-    setValidationError("")
+    setError("")
 
-    // Validate password match
     if (password !== confirmPassword) {
-      setValidationError("Passwords do not match")
+      setError("Passwords do not match")
       return
     }
 
-    // Validate password strength
-    if (password.length < 8) {
-      setValidationError("Password must be at least 8 characters")
-      return
-    }
-
-    setIsSubmitting(true)
+    setLoading(true)
 
     try {
-      await signUpWithEmail(email, password, username)
+      await signUp(username, email, password)
+      router.push("/profile")
     } catch (err) {
-      console.error("Sign up error:", err)
-    } finally {
-      setIsSubmitting(false)
-    }
-  }
-
-  const handleWalletSignIn = async () => {
-    try {
-      await signInWithWallet()
-    } catch (err) {
-      console.error("Wallet sign in error:", err)
+      setError(err.message || "Failed to create an account")
+      setLoading(false)
     }
   }
 
   return (
     <Layout>
-      <div className="flex items-center justify-center min-h-[80vh] px-4 py-8">
-        <motion.div
-          className="w-full max-w-md"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5 }}
-        >
-          <div className="card p-6">
-            <h1 className="text-2xl font-bold mb-6 text-center">Create an Account</h1>
+      <div className="min-h-screen py-12 px-4 sm:px-6 flex justify-center items-center">
+        <div className="max-w-5xl w-full flex flex-col md:flex-row bg-[#151524] rounded-2xl overflow-hidden shadow-xl">
+          {/* Left side - Image */}
+          <div className="md:w-1/2 relative h-48 md:h-auto">
+            <Image src="/placeholder.svg?key=ucm3j" alt="Sign Up" fill className="object-cover" />
+            <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a14]/80 to-transparent flex items-center justify-center p-8">
+              <div>
+                <h2 className="text-3xl font-bold mb-4">Join QuestHub</h2>
+                <p className="text-gray-300">Create an account to start your quest journey and earn rewards.</p>
+              </div>
+            </div>
+          </div>
 
-            {(error || validationError) && (
-              <div className="bg-red-500/10 border border-red-500/50 text-red-500 rounded-lg p-3 mb-4 text-sm">
-                {error || validationError}
+          {/* Right side - Form */}
+          <div className="md:w-1/2 p-8">
+            <div className="mb-8 text-center">
+              <h1 className="text-2xl font-bold mb-2">Create Your Account</h1>
+              <p className="text-gray-400">Join the QuestHub community and start your adventure</p>
+            </div>
+
+            {error && (
+              <div className="mb-4 p-3 bg-red-500/20 border border-red-500/50 text-red-300 rounded-lg text-sm">
+                {error}
               </div>
             )}
 
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} className="space-y-6">
               <div>
-                <label htmlFor="email" className="block text-sm font-medium mb-1">
-                  Email
-                </label>
-                <input
-                  id="email"
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#151524] border border-[#252540] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00a3ff]"
-                  required
-                />
-              </div>
-
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium mb-1">
+                <label htmlFor="username" className="block text-sm font-medium text-gray-300 mb-1">
                   Username
                 </label>
                 <input
@@ -96,13 +76,29 @@ export default function SignUp() {
                   type="text"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#151524] border border-[#252540] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00a3ff]"
                   required
+                  className="w-full px-4 py-3 bg-[#0a0a14] border border-[#252540] rounded-lg focus:outline-none focus:border-[#00a3ff]"
+                  placeholder="Choose a username"
                 />
               </div>
 
               <div>
-                <label htmlFor="password" className="block text-sm font-medium mb-1">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-300 mb-1">
+                  Email Address
+                </label>
+                <input
+                  id="email"
+                  type="email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  required
+                  className="w-full px-4 py-3 bg-[#0a0a14] border border-[#252540] rounded-lg focus:outline-none focus:border-[#00a3ff]"
+                  placeholder="Enter your email"
+                />
+              </div>
+
+              <div>
+                <label htmlFor="password" className="block text-sm font-medium text-gray-300 mb-1">
                   Password
                 </label>
                 <input
@@ -110,13 +106,14 @@ export default function SignUp() {
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#151524] border border-[#252540] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00a3ff]"
                   required
+                  className="w-full px-4 py-3 bg-[#0a0a14] border border-[#252540] rounded-lg focus:outline-none focus:border-[#00a3ff]"
+                  placeholder="Create a password"
                 />
               </div>
 
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium mb-1">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-300 mb-1">
                   Confirm Password
                 </label>
                 <input
@@ -124,55 +121,51 @@ export default function SignUp() {
                   type="password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
-                  className="w-full px-3 py-2 bg-[#151524] border border-[#252540] rounded-lg focus:outline-none focus:ring-1 focus:ring-[#00a3ff]"
                   required
+                  className="w-full px-4 py-3 bg-[#0a0a14] border border-[#252540] rounded-lg focus:outline-none focus:border-[#00a3ff]"
+                  placeholder="Confirm your password"
                 />
               </div>
 
-              <button
-                type="submit"
-                disabled={isSubmitting}
-                className="w-full bg-[#00a3ff] hover:bg-[#0090e0] text-white py-2 px-4 rounded-lg transition-colors disabled:opacity-50"
-              >
-                {isSubmitting ? "Creating Account..." : "Sign Up with Email"}
-              </button>
+              <div className="pt-2">
+                <button
+                  type="submit"
+                  disabled={loading}
+                  className="w-full bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-3 px-4 rounded-lg transition-all duration-200 flex items-center justify-center"
+                >
+                  {loading ? (
+                    <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin mr-2"></div>
+                  ) : null}
+                  Create Account
+                </button>
+              </div>
             </form>
 
-            <div className="my-6 flex items-center">
-              <div className="flex-grow h-px bg-[#252540]"></div>
-              <span className="px-4 text-sm text-gray-400">OR</span>
-              <div className="flex-grow h-px bg-[#252540]"></div>
+            <div className="mt-6">
+              <div className="relative">
+                <div className="absolute inset-0 flex items-center">
+                  <div className="w-full border-t border-[#252540]"></div>
+                </div>
+                <div className="relative flex justify-center text-sm">
+                  <span className="px-2 bg-[#151524] text-gray-400">Or continue with</span>
+                </div>
+              </div>
+
+              <div className="mt-6">
+                <WalletConnect fullWidth />
+              </div>
             </div>
 
-            <button
-              onClick={handleWalletSignIn}
-              className="w-full bg-[#151524] hover:bg-[#1e1e32] text-white py-2 px-4 rounded-lg transition-colors flex items-center justify-center gap-2"
-            >
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="20"
-                height="20"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              >
-                <rect x="2" y="6" width="20" height="12" rx="2"></rect>
-                <path d="M14 12h4"></path>
-              </svg>
-              Connect Wallet
-            </button>
-
-            <p className="mt-6 text-center text-sm text-gray-400">
-              Already have an account?{" "}
-              <Link href="/auth/signin" className="text-[#00a3ff] hover:underline">
-                Sign In
-              </Link>
-            </p>
+            <div className="mt-8 text-center">
+              <p className="text-gray-400 text-sm">
+                Already have an account?{" "}
+                <Link href="/auth/signin" className="text-[#00a3ff] hover:underline">
+                  Sign in
+                </Link>
+              </p>
+            </div>
           </div>
-        </motion.div>
+        </div>
       </div>
     </Layout>
   )
