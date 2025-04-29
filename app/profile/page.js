@@ -162,7 +162,16 @@ export default function Profile() {
           <div className="relative mb-8">
             {/* Cover Image */}
             <div className="h-48 md:h-64 rounded-xl overflow-hidden relative">
-              <Image src="/vibrant-flow.png" alt="Profile Cover" fill className="object-cover" />
+              <Image
+                src="/vibrant-flow.png"
+                alt="Profile Cover"
+                fill
+                className="object-cover"
+                priority
+                quality={85}
+                placeholder="blur"
+                blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFdgJQKVrGgQAAAABJRU5ErkJggg=="
+              />
               <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a14] to-transparent"></div>
             </div>
 

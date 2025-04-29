@@ -27,6 +27,10 @@ export default function QuestCard({ quest }) {
           height={200}
           alt={quest.title}
           className="w-full h-40 object-cover"
+          loading="lazy"
+          quality={80}
+          placeholder="blur"
+          blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFdgJQKVrGgQAAAABJRU5ErkJggg=="
         />
 
         {quest.locked && (

@@ -64,7 +64,10 @@
     "@solana/wallet-adapter-react": "latest",
     "@solana/wallet-adapter-base": "latest",
     "@solana/wallet-adapter-react-ui": "latest",
-    "@solana/wallet-adapter-wallets": "latest"
+    "@solana/wallet-adapter-wallets": "latest",
+    "sharp": "latest",
+    "fs": "latest",
+    "path": "latest"
   },
   "devDependencies": {
     "@types/node": "^22",

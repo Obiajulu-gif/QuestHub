@@ -324,16 +324,15 @@ export default function HomePage() {
           <div className="relative w-full h-[500px] md:h-[600px] lg:h-[700px] overflow-hidden">
             <div className="absolute inset-0 bg-gradient-to-r from-[#0a0a14] via-[#0a0a14]/70 to-transparent z-10"></div>
             <Image
-              src={
-                heroSlides[currentSlide].image ||
-                "/placeholder.svg?height=700&width=1920&query=futuristic digital quest background with glowing elements" ||
-                "/placeholder.svg" ||
-                "/placeholder.svg"
-              }
+              src={heroSlides[currentSlide].image || "/placeholder.svg"}
               alt={heroSlides[currentSlide].title}
               fill
               className="object-cover"
               priority
+              quality={90}
+              placeholder="blur"
+              blurDataURL="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+P+/HgAFdgJQKVrGgQAAAABJRU5ErkJggg=="
+              sizes="100vw"
             />
 
             {/* Content */}

@@ -38,6 +38,8 @@ export default function BadgeCard({ badge }) {
               height={150}
               alt={badge.name}
               className="object-contain max-h-40"
+              loading="lazy"
+              quality={85}
             />
           ) : (
             <Image
@@ -46,6 +48,8 @@ export default function BadgeCard({ badge }) {
               height={150}
               alt={badge.name}
               className="object-contain max-h-40"
+              loading="lazy"
+              quality={85}
             />
           )}
         </div>
