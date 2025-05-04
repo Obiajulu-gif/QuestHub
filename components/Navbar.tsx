@@ -7,6 +7,9 @@ import { motion } from "framer-motion"
 import { useWallet } from "@solana/wallet-adapter-react"
 import { useAuth } from "@/context/AuthContext"
 import NotificationDropdown from "./notifications/NotificationDropdown"
+import { Button } from "@/components/ui/Button"
+import { Avatar } from "@/components/ui/Avatar"
+import { Container } from "@/components/ui/Container"
 
 const Navbar = () => {
   const pathname = usePathname()
@@ -47,20 +50,20 @@ const Navbar = () => {
         scrolled ? "bg-[#0a0a14]/90 backdrop-blur-md shadow-md" : "bg-transparent"
       }`}
     >
-      <div className="container mx-auto px-4 md:px-6">
+      <Container>
         <div className="flex items-center justify-between h-16">
           {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <span className="text-[#00a3ff] font-bold text-xl">QuestHub</span>
+          <Link href="/" className="flex items-center mr-4 sm:mr-6">
+            <span className="text-[#00a3ff] font-bold text-lg sm:text-xl whitespace-nowrap">QuestHub</span>
           </Link>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-6">
+          <nav className="hidden md:flex items-center space-x-6 flex-grow justify-center">
             {navItems.map((item) => (
               <Link
                 key={item.path}
                 href={item.path}
-                className={`text-sm transition-colors hover:text-[#00a3ff] ${
+                className={`text-sm transition-all hover:text-[#00a3ff] whitespace-nowrap ${
                   pathname === item.path ? "text-[#00a3ff]" : "text-gray-300"
                 }`}
               >
@@ -78,10 +81,14 @@ const Navbar = () => {
                 <button
                   className="flex items-center gap-2 bg-[#151524] hover:bg-[#1e1e32] px-3 py-1.5 rounded-lg transition-colors"
                   onClick={() => setUserMenuOpen(!userMenuOpen)}
+                  aria-expanded={userMenuOpen}
+                  aria-haspopup="true"
                 >
-                  <div className="w-7 h-7 bg-gradient-to-br from-[#00a3ff] to-[#7928ca] rounded-full flex items-center justify-center text-xs font-bold">
-                    {user.username.charAt(0)}
-                  </div>
+                  <Avatar
+                    size="sm"
+                    fallback={user.username.charAt(0)}
+                    className="bg-gradient-to-br from-[#00a3ff] to-[#7928ca]"
+                  />
                   <span className="text-sm hidden sm:block">{user.username}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
@@ -118,25 +125,23 @@ const Navbar = () => {
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <Link
-                  href="/auth/signin"
-                  className="text-sm px-4 py-1.5 rounded-lg hover:bg-[#151524] transition-colors"
-                >
-                  Sign In
+                <Link href="/auth/signin">
+                  <Button variant="ghost" size="sm">
+                    Sign In
+                  </Button>
                 </Link>
-                <Link
-                  href="/auth/signup"
-                  className="text-sm bg-[#00a3ff] hover:bg-[#0090e0] px-4 py-1.5 rounded-lg transition-colors"
-                >
-                  Sign Up
+                <Link href="/auth/signup">
+                  <Button size="sm">Sign Up</Button>
                 </Link>
               </div>
             )}
 
             {/* Mobile Menu Button */}
             <button
-              className="md:hidden p-2 rounded-lg hover:bg-[#151524] transition-colors"
+              className="md:hidden p-1 sm:p-2 rounded-lg hover:bg-[#151524] transition-colors"
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-expanded={mobileMenuOpen}
+              aria-label="Toggle menu"
             >
               {mobileMenuOpen ? (
                 <svg
@@ -173,52 +178,54 @@ const Navbar = () => {
             </button>
           </div>
         </div>
-      </div>
+      </Container>
 
       {/* Mobile Menu */}
       <motion.div
-        className={`md:hidden bg-[#0a0a14] overflow-hidden ${mobileMenuOpen ? "block" : "hidden"}`}
+        className={`md:hidden bg-[#0a0a14] overflow-hidden z-50 ${mobileMenuOpen ? "block" : "hidden"}`}
         initial={{ height: 0 }}
         animate={{ height: mobileMenuOpen ? "auto" : 0 }}
         transition={{ duration: 0.3 }}
       >
-        <nav className="container mx-auto px-4 py-4">
-          <ul className="space-y-2">
-            {navItems.map((item) => (
-              <li key={item.path}>
-                <Link
-                  href={item.path}
-                  className={`block py-2 px-4 rounded-lg transition-colors ${
-                    pathname === item.path ? "bg-[#151524] text-[#00a3ff]" : "hover:bg-[#151524] text-gray-300"
-                  }`}
-                >
-                  {item.name}
-                </Link>
-              </li>
-            ))}
+        <Container>
+          <nav className="py-2 sm:py-4">
+            <ul className="space-y-1 sm:space-y-2">
+              {navItems.map((item) => (
+                <li key={item.path}>
+                  <Link
+                    href={item.path}
+                    className={`block py-2 px-4 rounded-lg transition-colors ${
+                      pathname === item.path ? "bg-[#151524] text-[#00a3ff]" : "hover:bg-[#151524] text-gray-300"
+                    }`}
+                  >
+                    {item.name}
+                  </Link>
+                </li>
+              ))}
 
-            {!user && (
-              <>
-                <li>
-                  <Link
-                    href="/auth/signin"
-                    className="block py-2 px-4 rounded-lg transition-colors hover:bg-[#151524] text-gray-300"
-                  >
-                    Sign In
-                  </Link>
-                </li>
-                <li>
-                  <Link
-                    href="/auth/signup"
-                    className="block py-2 px-4 rounded-lg transition-colors bg-[#00a3ff] text-white"
-                  >
-                    Sign Up
-                  </Link>
-                </li>
-              </>
-            )}
-          </ul>
-        </nav>
+              {!user && (
+                <>
+                  <li>
+                    <Link
+                      href="/auth/signin"
+                      className="block py-2 px-4 rounded-lg transition-colors hover:bg-[#151524] text-gray-300"
+                    >
+                      Sign In
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      href="/auth/signup"
+                      className="block py-2 px-4 rounded-lg transition-colors bg-[#00a3ff] text-white"
+                    >
+                      Sign Up
+                    </Link>
+                  </li>
+                </>
+              )}
+            </ul>
+          </nav>
+        </Container>
       </motion.div>
     </header>
   )

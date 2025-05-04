@@ -9,6 +9,9 @@ import { useWallet } from "@solana/wallet-adapter-react"
 import { Layout } from "@/components/Layout"
 import { useAuth } from "@/context/AuthContext"
 
+/* Add a custom class for hiding scrollbars on mobile */
+const hideScrollbarClass = "scrollbar-hide"
+
 // Mock data for leaderboard
 const leaderboardData = [
   { rank: 1, profile: "Crypto Whiz", points: 25080, avatar: "/avatars/avatar-1.png" },
@@ -338,9 +341,9 @@ export default function HomePage() {
             {/* Content */}
             <div className="absolute inset-0 z-20 flex items-center">
               <div className="container mx-auto px-4 md:px-6">
-                <div className="max-w-lg">
+                <div className="max-w-lg mx-auto md:mx-0">
                   <motion.h1
-                    className="text-3xl md:text-5xl lg:text-6xl font-bold mb-4 leading-tight"
+                    className="text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-bold mb-2 sm:mb-4 leading-tight text-center md:text-left"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.2 }}
@@ -348,7 +351,7 @@ export default function HomePage() {
                     {heroSlides[currentSlide].title}
                   </motion.h1>
                   <motion.p
-                    className="text-gray-300 text-lg mb-8"
+                    className="text-gray-300 text-sm sm:text-base md:text-lg mb-4 sm:mb-8 text-center md:text-left"
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.4 }}
@@ -359,7 +362,7 @@ export default function HomePage() {
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.5, delay: 0.6 }}
-                    className="flex flex-wrap gap-4"
+                    className="flex flex-wrap justify-center md:justify-start gap-4"
                   >
                     <Link
                       href={heroSlides[currentSlide].ctaLink}
@@ -396,31 +399,37 @@ export default function HomePage() {
         </section>
 
         {/* Stats Banner */}
-        <section className="bg-gradient-to-r from-[#151524] to-[#1e1e32] py-8 border-y border-[#252540]">
+        <section className="bg-gradient-to-r from-[#151524] to-[#1e1e32] py-6 border-y border-[#252540]">
           <div className="container mx-auto px-4 md:px-6">
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6 text-center">
               <div className="flex flex-col items-center">
-                <div className="text-3xl md:text-4xl font-bold text-white mb-2">10K+</div>
-                <div className="text-gray-400 text-sm">Active Users</div>
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">
+                  10K+
+                </div>
+                <div className="text-xs sm:text-sm text-gray-400">Active Users</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-3xl md:text-4xl font-bold text-white mb-2">500+</div>
-                <div className="text-gray-400 text-sm">Quests Available</div>
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">
+                  500+
+                </div>
+                <div className="text-xs sm:text-sm text-gray-400">Quests Available</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-3xl md:text-4xl font-bold text-white mb-2">50K+</div>
-                <div className="text-gray-400 text-sm">NFT Badges Minted</div>
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">
+                  50K+
+                </div>
+                <div className="text-xs sm:text-sm text-gray-400">NFT Badges Minted</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-3xl md:text-4xl font-bold text-white mb-2">1M+</div>
-                <div className="text-gray-400 text-sm">SOL Rewarded</div>
+                <div className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-1 sm:mb-2">1M+</div>
+                <div className="text-xs sm:text-sm text-gray-400">SOL Rewarded</div>
               </div>
             </div>
           </div>
         </section>
 
         {/* Main Content */}
-        <div className="px-4 py-16 md:px-6 max-w-7xl mx-auto">
+        <div className="px-4 py-12 md:px-6 max-w-7xl mx-auto">
           {/* Features Section */}
           <motion.section
             ref={featuresRef}
@@ -439,7 +448,7 @@ export default function HomePage() {
               </motion.p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-4 sm:gap-6 md:gap-8">
               <motion.div variants={fadeIn} className="bg-[#151524] rounded-xl p-8 text-center">
                 <div className="w-16 h-16 bg-[#00a3ff]/20 rounded-full flex items-center justify-center mx-auto mb-6">
                   <svg
@@ -533,7 +542,7 @@ export default function HomePage() {
               </motion.p>
             </div>
 
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8">
               {howItWorksSteps.map((step, index) => (
                 <motion.div key={step.id} variants={fadeIn} className="flex flex-col items-center text-center">
                   <div className="relative">
@@ -577,10 +586,10 @@ export default function HomePage() {
           </motion.section>
 
           {/* Leaderboard and Community Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 mb-24">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 sm:gap-8 mb-16 sm:mb-24">
             {/* Leaderboard */}
             <div className="lg:col-span-2">
-              <div className="bg-[#151524] rounded-xl p-6">
+              <div className="bg-[#151524] rounded-xl p-4 sm:p-6">
                 <div className="flex items-center justify-between mb-6">
                   <h2 className="text-2xl font-bold">Leaderboard</h2>
                   <div className="flex items-center gap-4">
@@ -697,6 +706,7 @@ export default function HomePage() {
                                     width={32}
                                     height={32}
                                     className="object-cover"
+                                    loading="eager"
                                   />
                                 ) : (
                                   item.profile.charAt(0)
@@ -712,7 +722,9 @@ export default function HomePage() {
                   </table>
                 </div>
                 <div className="mt-6 text-center">
-                  <button className="text-[#00a3ff] text-sm hover:underline">View Full Leaderboard</button>
+                  <Link href="/leaderboard" className="text-[#00a3ff] text-sm hover:underline">
+                    View Full Leaderboard
+                  </Link>
                 </div>
               </div>
             </div>
@@ -735,6 +747,7 @@ export default function HomePage() {
                             width={40}
                             height={40}
                             className="object-cover"
+                            loading="eager"
                           />
                         </div>
                         <div className="absolute bottom-0 right-0 w-3 h-3 bg-green-500 rounded-full border-2 border-[#151524]"></div>
@@ -756,6 +769,7 @@ export default function HomePage() {
                         user: "CryptoWhiz",
                         action: "completed the Brain Flex Challenge",
                         time: "5 min ago",
+                        avatar: "/avatars/avatar-1.png",
                         icon: (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -779,6 +793,7 @@ export default function HomePage() {
                         user: "BadgeCollector",
                         action: "earned the Logic Master badge",
                         time: "20 min ago",
+                        avatar: "/avatars/avatar-2.png",
                         icon: (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -802,6 +817,7 @@ export default function HomePage() {
                         user: "RiddleSolver",
                         action: "joined the weekly contest",
                         time: "1 hour ago",
+                        avatar: "/avatars/avatar-3.png",
                         icon: (
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
@@ -830,8 +846,19 @@ export default function HomePage() {
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ duration: 0.3, delay: index * 0.1 }}
                       >
-                        <div className="w-8 h-8 rounded-full bg-[#252540] flex items-center justify-center flex-shrink-0">
-                          {activity.icon}
+                        <div className="w-8 h-8 rounded-full bg-[#252540] flex items-center justify-center flex-shrink-0 overflow-hidden">
+                          {activity.avatar ? (
+                            <Image
+                              src={activity.avatar || "/placeholder.svg"}
+                              alt={activity.user}
+                              width={32}
+                              height={32}
+                              className="object-cover"
+                              loading="eager"
+                            />
+                          ) : (
+                            activity.icon
+                          )}
                         </div>
                         <div>
                           <p className="text-sm">
@@ -847,7 +874,9 @@ export default function HomePage() {
 
                 {/* View All Button */}
                 <div className="mt-6 text-center">
-                  <button className="text-[#00a3ff] text-sm hover:underline">View All Activity</button>
+                  <Link href="/activity" className="text-[#00a3ff] text-sm hover:underline">
+                    View All Activity
+                  </Link>
                 </div>
               </div>
             </div>
@@ -879,7 +908,7 @@ export default function HomePage() {
                   {testimonials.map((testimonial) => (
                     <div key={testimonial.id} className="w-full flex-shrink-0 px-4">
                       <motion.div variants={fadeIn} className="bg-[#151524] rounded-xl p-8 md:p-10">
-                        <div className="flex flex-col md:flex-row md:items-center gap-6 mb-6">
+                        <div className="flex flex-col md:flex-row md:items-center gap-4 sm:gap-6 mb-4 sm:mb-6">
                           <div className="w-16 h-16 rounded-full overflow-hidden">
                             <Image
                               src={testimonial.avatar || "/placeholder.svg"}
@@ -966,7 +995,10 @@ export default function HomePage() {
             </div>
 
             {/* Category Tabs */}
-            <motion.div variants={fadeIn} className="flex overflow-x-auto pb-2 mb-8 gap-2 hide-scrollbar">
+            <motion.div
+              variants={fadeIn}
+              className={`flex overflow-x-auto pb-2 mb-6 sm:mb-8 gap-2 ${hideScrollbarClass}`}
+            >
               {["all", "quiz", "riddle", "challenge", "puzzle"].map((category) => (
                 <button
                   key={category}
@@ -981,7 +1013,7 @@ export default function HomePage() {
             </motion.div>
 
             {/* Quest Cards Grid */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-4 sm:gap-6">
               {questsData
                 .filter((quest) => activeTab === "all" || quest.category === activeTab)
                 .map((quest) => (
@@ -1072,7 +1104,7 @@ export default function HomePage() {
 
           {/* CTA Banner */}
           <section className="relative mb-24 overflow-hidden rounded-xl">
-            <div className="relative h-64 md:h-80 bg-gradient-to-r from-[#151524] to-[#252540] rounded-xl overflow-hidden">
+            <div className="relative h-48 sm:h-64 md:h-80 bg-gradient-to-r from-[#151524] to-[#252540] rounded-xl overflow-hidden">
               <Image
                 src="/cta-background.png"
                 alt="Join the community"
@@ -1081,8 +1113,10 @@ export default function HomePage() {
               />
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center px-4 max-w-2xl">
-                  <h2 className="text-2xl md:text-4xl font-bold mb-4">Ready to Start Your Quest Journey?</h2>
-                  <p className="text-gray-300 mb-8">
+                  <h2 className="text-xl sm:text-2xl md:text-4xl font-bold mb-2 sm:mb-4">
+                    Ready to Start Your Quest Journey?
+                  </h2>
+                  <p className="text-gray-300 text-sm sm:text-base mb-4 sm:mb-8">
                     Join thousands of users who are already earning rewards, collecting NFT badges, and climbing the
                     leaderboard.
                   </p>
@@ -1118,9 +1152,9 @@ export default function HomePage() {
 
           {/* Newsletter */}
           <section className="mb-12">
-            <div className="bg-[#151524] rounded-xl p-8 md:p-10">
-              <div className="flex flex-col md:flex-row items-center justify-between gap-8">
-                <div className="md:max-w-md">
+            <div className="bg-[#151524] rounded-xl p-4 sm:p-6 md:p-8 lg:p-10">
+              <div className="flex flex-col md:flex-row items-center justify-between gap-6 sm:gap-8">
+                <div className="w-full md:max-w-md">
                   <h2 className="text-2xl font-bold mb-4">Stay Updated</h2>
                   <p className="text-gray-400 mb-4">
                     Subscribe to our newsletter for the latest quests, rewards, and platform updates.
@@ -1137,7 +1171,13 @@ export default function HomePage() {
                   </div>
                 </div>
                 <div className="relative w-full md:w-80 h-48">
-                  <Image src="/placeholder.svg?key=cb90d" alt="Newsletter" fill className="object-cover rounded-lg" />
+                  <Image
+                    src="/newsletter-updates.png"
+                    alt="Newsletter"
+                    fill
+                    className="object-cover rounded-lg"
+                    loading="lazy"
+                  />
                 </div>
               </div>
             </div>
