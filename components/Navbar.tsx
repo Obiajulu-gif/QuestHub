@@ -4,17 +4,22 @@ import { useState, useEffect } from "react"
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { motion } from "framer-motion"
-import { useWallet } from "@solana/wallet-adapter-react"
+// Import is kept but commented out to make it dormant
+// import { useWallet } from "@solana/wallet-adapter-react"
 import { useAuth } from "@/context/AuthContext"
 import NotificationDropdown from "./notifications/NotificationDropdown"
-import { Button } from "@/components/ui/Button"
-import { Avatar } from "@/components/ui/Avatar"
+import { useScore } from "@/context/ScoreContext"
+import { Button } from "@/components/ui/button"
+import { Avatar, AvatarFallback } from "@/components/ui/avatar"
 import { Container } from "@/components/ui/Container"
 
 const Navbar = () => {
   const pathname = usePathname()
-  const { connected } = useWallet()
+  // Make wallet connection dormant - hardcode connected to true
+  // const { connected } = useWallet()
+  const connected = true // Hardcoded to always be true
   const { user, signOut } = useAuth()
+  const { score } = useScore()
   const [scrolled, setScrolled] = useState(false)
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false)
   const [userMenuOpen, setUserMenuOpen] = useState(false)
@@ -74,6 +79,10 @@ const Navbar = () => {
 
           {/* Right Side - Wallet & Notifications */}
           <div className="flex items-center gap-4">
+            {/* Accumulated Score Display */}
+            <div className="hidden md:flex items-center gap-2 text-sm font-medium text-[#00a3ff]">
+              <span>🏆</span> {score.toFixed(2)} BNB
+            </div>
             {user && <NotificationDropdown />}
 
             {user ? (
@@ -84,11 +93,9 @@ const Navbar = () => {
                   aria-expanded={userMenuOpen}
                   aria-haspopup="true"
                 >
-                  <Avatar
-                    size="sm"
-                    fallback={user.username.charAt(0)}
-                    className="bg-gradient-to-br from-[#00a3ff] to-[#7928ca]"
-                  />
+                  <Avatar className="h-8 w-8 bg-gradient-to-br from-[#00a3ff] to-[#7928ca]">
+                    <AvatarFallback>{user.username.charAt(0)}</AvatarFallback>
+                  </Avatar>
                   <span className="text-sm hidden sm:block">{user.username}</span>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"

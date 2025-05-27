@@ -42,6 +42,23 @@ const MOCK_USERS = [
   },
 ]
 
+// Replace all AuthProvider declarations with AuthProviderOriginal to avoid duplicate exports
+export function AuthProviderOriginal({ children }: { children: ReactNode }) {
+  const dummyUser: UserType = { id: 'test-user', username: 'Patrick' }
+  const value = {
+    user: dummyUser,
+    loading: false,
+    error: null,
+    signInWithEmail: async (email: string, password: string) => {},
+    signUpWithEmail: async (email: string, password: string, username: string) => {},
+    signInWithWallet: async () => {},
+    signOut: () => {},
+    updateProfile: async (data: Partial<UserType>) => {},
+  }
+  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+}
+
+// Stubbed AuthProvider to disable auth gating
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<UserType | null>(null)
   const [loading, setLoading] = useState(true)
@@ -292,10 +309,21 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 }
 
 // Custom hook to use auth context
-export function useAuth() {
+export function useAuth(): AuthContextType {
   const context = useContext(AuthContext)
   if (context === undefined) {
-    throw new Error("useAuth must be used within an AuthProvider")
+    // Return dummy context for testing without auth
+    const dummyUser: UserType = { id: 'test-user', username: 'Patrick' }
+    return {
+      user: dummyUser,
+      loading: false,
+      error: null,
+      signInWithEmail: async () => {},
+      signUpWithEmail: async () => {},
+      signInWithWallet: async () => {},
+      signOut: () => {},
+      updateProfile: async (data: Partial<UserType>) => {},
+    }
   }
   return context
 }
