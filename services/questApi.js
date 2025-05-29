@@ -32,7 +32,7 @@ const makeApiCall = async (url, options, retries = 3, delay = 1000) => {
       if (error.name === 'AbortError') {
         console.error(`Attempt ${attempt + 1}/${retries} timed out.`);
       } else {
-        console.error(`Attempt ${attempt + 1}/${retries} failed:`, error.message || error);
+      console.error(`Attempt ${attempt + 1}/${retries} failed:`, error.message || error);
       }
       lastError = error;
       

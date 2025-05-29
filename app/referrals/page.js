@@ -39,27 +39,6 @@ const referralHistory = [
     status: "pending",
     reward: "0.05 SOL",
   },
-  {
-    id: 5,
-    username: "Web3Explorer",
-    date: "2023-12-05T11:20:00Z",
-    status: "completed",
-    reward: "0.075 SOL",
-  },
-  {
-    id: 6,
-    username: "TokenCollector",
-    date: "2023-12-12T08:45:00Z",
-    status: "completed",
-    reward: "0.075 SOL",
-  },
-  {
-    id: 7,
-    username: "DeFiEnthusiast",
-    date: "2023-12-18T14:10:00Z",
-    status: "pending",
-    reward: "0.075 SOL",
-  },
 ]
 
 // Referral tiers
@@ -102,28 +81,12 @@ const referralTiers = [
   },
 ]
 
-// Additional statistics
-const referralStats = {
-  totalReferrals: 7,
-  completedReferrals: 5,
-  pendingReferrals: 2,
-  totalRewards: 0.425, // SOL
-  currentTier: "Silver",
-  nextTierProgress: 7, // out of 15 for Silver tier
-  nextMilestone: {
-    type: "bonus",
-    description: "0.5 SOL bonus at 10 referrals",
-    current: 7,
-    target: 10
-  }
-}
-
 export default function Referrals() {
   const router = useRouter()
   const { connected, publicKey } = useWallet()
   const [loading, setLoading] = useState(true)
-  const [referralCode, setReferralCode] = useState("REF4X8YZ")
-  const [referralLink, setReferralLink] = useState("https://questhub.io/join?ref=REF4X8YZ")
+  const [referralCode, setReferralCode] = useState("")
+  const [referralLink, setReferralLink] = useState("")
   const [copied, setCopied] = useState(false)
   const [activeTab, setActiveTab] = useState("link") // link, history, tiers
 
@@ -207,8 +170,16 @@ export default function Referrals() {
             </h1>
             <p className="text-[#B3C6FF]">Invite friends and earn rewards when they join QuestHub</p>
           </div>
+
+          {!connected && (
+            <div>
+              <WalletConnect />
+            </div>
+          )}
         </div>
 
+        {connected ? (
+          <>
             {/* Referral Stats */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
               <motion.div
@@ -240,7 +211,7 @@ export default function Referrals() {
                   </div>
                   <div>
                     <div className="text-sm text-[#B3C6FF]">Total Referrals</div>
-                <div className="text-2xl font-bold">{referralStats.totalReferrals}</div>
+                    <div className="text-2xl font-bold">3</div>
                   </div>
                 </div>
               </motion.div>
@@ -273,7 +244,7 @@ export default function Referrals() {
                   </div>
                   <div>
                     <div className="text-sm text-[#B3C6FF]">Total Rewards</div>
-                <div className="text-2xl font-bold">{referralStats.totalRewards} SOL</div>
+                    <div className="text-2xl font-bold">0.15 SOL</div>
                   </div>
                 </div>
               </motion.div>
@@ -286,7 +257,7 @@ export default function Referrals() {
                 whileHover={{ y: -5, transition: { duration: 0.2 } }}
               >
                 <div className="flex items-center gap-4">
-              <div className="w-12 h-12 rounded-lg bg-[#C0C0C0]/20 flex items-center justify-center">
+                  <div className="w-12 h-12 rounded-lg bg-[#8A3FFC]/20 flex items-center justify-center">
                     <svg
                       xmlns="http://www.w3.org/2000/svg"
                       width="24"
@@ -297,60 +268,47 @@ export default function Referrals() {
                       strokeWidth="2"
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                  className="text-[#C0C0C0]"
+                      className="text-[#8A3FFC]"
                     >
-                  <path d="M20 6 9 17l-5-5"></path>
+                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
                     </svg>
                   </div>
                   <div>
                     <div className="text-sm text-[#B3C6FF]">Current Tier</div>
-                <div className="text-2xl font-bold">{referralStats.currentTier}</div>
+                    <div className="text-2xl font-bold">Bronze</div>
                   </div>
                 </div>
               </motion.div>
             </div>
 
-        {/* Next Milestone Progress */}
-        <motion.div 
-          className="card p-5 mb-8"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.3, delay: 0.3 }}
-        >
-          <h2 className="text-lg font-bold mb-3">Next Milestone</h2>
-          <div className="mb-2 flex justify-between text-sm">
-            <span>{referralStats.nextMilestone.description}</span>
-            <span className="text-[#0DF5E3]">{referralStats.nextMilestone.current} / {referralStats.nextMilestone.target}</span>
-          </div>
-          <div className="w-full bg-[#151524] rounded-full h-3">
-            <div 
-              className="bg-gradient-to-r from-[#0DF5E3] to-[#00A3FF] h-3 rounded-full"
-              style={{ width: `${(referralStats.nextMilestone.current / referralStats.nextMilestone.target) * 100}%` }}
-            ></div>
-          </div>
-        </motion.div>
-
             {/* Tabs */}
-        <div className="flex border-b border-[#1D203E] mb-6">
+            <div className="flex overflow-x-auto pb-2 mb-6 gap-2 hide-scrollbar">
               <button
-            className={`px-4 py-2 text-sm font-medium ${
-              activeTab === "link" ? "text-white border-b-2 border-[#0DF5E3]" : "text-[#B3C6FF] hover:text-white"
+                className={`px-5 py-2.5 rounded-lg text-sm whitespace-nowrap transition-all ${
+                  activeTab === "link"
+                    ? "bg-[#0DF5E3] text-[#060B27] font-medium"
+                    : "bg-[#0F1642] text-[#B3C6FF] hover:bg-[#17245F]"
                 }`}
                 onClick={() => setActiveTab("link")}
               >
-            Referral Link
+                Your Referral Link
               </button>
               <button
-            className={`px-4 py-2 text-sm font-medium ${
-              activeTab === "history" ? "text-white border-b-2 border-[#0DF5E3]" : "text-[#B3C6FF] hover:text-white"
+                className={`px-5 py-2.5 rounded-lg text-sm whitespace-nowrap transition-all ${
+                  activeTab === "history"
+                    ? "bg-[#0DF5E3] text-[#060B27] font-medium"
+                    : "bg-[#0F1642] text-[#B3C6FF] hover:bg-[#17245F]"
                 }`}
                 onClick={() => setActiveTab("history")}
               >
                 Referral History
               </button>
               <button
-            className={`px-4 py-2 text-sm font-medium ${
-              activeTab === "tiers" ? "text-white border-b-2 border-[#0DF5E3]" : "text-[#B3C6FF] hover:text-white"
+                className={`px-5 py-2.5 rounded-lg text-sm whitespace-nowrap transition-all ${
+                  activeTab === "tiers"
+                    ? "bg-[#0DF5E3] text-[#060B27] font-medium"
+                    : "bg-[#0F1642] text-[#B3C6FF] hover:bg-[#17245F]"
                 }`}
                 onClick={() => setActiveTab("tiers")}
               >
@@ -359,132 +317,93 @@ export default function Referrals() {
             </div>
 
             {/* Tab Content */}
-        {activeTab === "link" && (
             <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
+              key={activeTab}
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.3 }}
             >
-            <div className="card p-6 mb-6">
-              <h2 className="text-lg font-bold mb-4">Your Referral Link</h2>
+              {activeTab === "link" && (
+                  <div className="card p-6">
+                  <h2 className="text-xl font-bold mb-4">Your Referral Link</h2>
                   <p className="text-[#B3C6FF] mb-6">
-                Share this link with friends. When they sign up and complete their first quest, you'll both receive rewards!
+                    Share your unique referral link with friends and earn rewards when they join QuestHub and complete
+                    quests.
                     </p>
 
-              <div className="flex flex-col md:flex-row gap-2 mb-6">
-                <div className="relative flex-grow">
-                  <input
-                    type="text"
-                    value={referralLink}
-                    readOnly
-                    className="w-full bg-[#151524] border border-[#1D203E] rounded-lg py-3 px-4 text-white focus:outline-none focus:ring-2 focus:ring-[#0DF5E3] focus:border-transparent"
-                  />
-                  <div className="absolute right-3 top-3 bg-[#1D203E] text-xs text-[#B3C6FF] px-2 py-1 rounded">
-                    Code: {referralCode}
-                  </div>
+                  <div className="mb-6">
+                    <label className="text-sm text-[#B3C6FF] mb-2 block">Your Referral Code</label>
+                    <div className="flex items-center gap-2">
+                      <div className="bg-[#0A0F33] border border-[#1B2A6E] rounded-lg px-4 py-3 flex-grow text-white font-mono">
+                        {referralCode}
                       </div>
                       <button
                         onClick={copyToClipboard}
-                  className="bg-[#0DF5E3] hover:bg-[#0bc6b9] text-[#060B27] font-medium py-3 px-6 rounded-lg transition-all duration-200 min-w-[120px] flex items-center justify-center"
+                        className="btn-outline py-3 px-4 flex-shrink-0"
                       >
-                  {copied ? (
-                    <>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2"
-                      >
-                        <path d="M20 6 9 17l-5-5"></path>
-                      </svg>
-                      Copied!
-                    </>
-                  ) : (
-                    <>
-                      <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        width="20"
-                        height="20"
-                        viewBox="0 0 24 24"
-                        fill="none"
-                        stroke="currentColor"
-                        strokeWidth="2"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        className="mr-2"
-                      >
-                        <rect x="9" y="9" width="13" height="13" rx="2" ry="2"></rect>
-                        <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"></path>
-                      </svg>
-                      Copy
-                    </>
-                  )}
+                        {copied ? "Copied!" : "Copy"}
                       </button>
                     </div>
+                    </div>
 
-              <h3 className="text-md font-bold mb-3">Share on Social Media</h3>
+                  <div className="mb-8">
+                    <label className="text-sm text-[#B3C6FF] mb-2 block">Your Referral Link</label>
+                    <div className="flex items-center gap-2">
+                      <div className="bg-[#0A0F33] border border-[#1B2A6E] rounded-lg px-4 py-3 flex-grow text-white truncate font-mono">
+                        {referralLink}
+                      </div>
+                      <button
+                        onClick={copyToClipboard}
+                        className="btn-outline py-3 px-4 flex-shrink-0"
+                      >
+                        {copied ? "Copied!" : "Copy"}
+                      </button>
+                      </div>
+                    </div>
+
+                  <div className="bg-[#0A0F33] rounded-xl p-6 mb-6 border border-[#1B2A6E]">
+                    <h3 className="text-lg font-bold mb-4">Share Your Link</h3>
                       <div className="flex flex-wrap gap-3">
                         <button
                           onClick={() => shareReferral("twitter")}
-                  className="bg-[#1DA1F2] hover:bg-[#1a94df] text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center"
+                        className="flex items-center gap-2 bg-[#1DA1F2]/20 hover:bg-[#1DA1F2]/30 text-white py-2 px-4 rounded-lg transition-colors"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                           width="20"
                           height="20"
                             viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="mr-2"
+                          fill="#1DA1F2"
                           >
-                    <path d="M22 4s-.7 2.1-2 3.4c1.6 10-9.4 17.3-18 11.6 2.2.1 4.4-.6 6-2C3 15.5.5 9.6 3 5c2.2 2.6 5.6 4.1 9 4-.9-4.2 4-6.6 7-3.8 1.1 0 3-1.2 3-1.2z"></path>
+                            <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
                           </svg>
                         Twitter
                         </button>
                         <button
                           onClick={() => shareReferral("telegram")}
-                  className="bg-[#0088cc] hover:bg-[#0077b3] text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center"
+                        className="flex items-center gap-2 bg-[#0088cc]/20 hover:bg-[#0088cc]/30 text-white py-2 px-4 rounded-lg transition-colors"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                           width="20"
                           height="20"
                             viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="mr-2"
+                          fill="#0088cc"
                           >
-                    <path d="M21.198 2.433a2.242 2.242 0 0 0-1.022.215l-8.609 3.33c-2.068.8-4.133 1.598-5.724 2.21a405.15 405.15 0 0 1-2.849 1.09c-.42.147-.99.332-1.473.901-.728.968.193 1.798.919 2.286 1.61.516 3.275 1.009 4.654 1.472.846 1.467 1.816 3.212 2.862 5.09.143.259.182.559.1.812.77 1.192.223 1.179.375 1.544.607.907 1.42 1.444 1.744 1.673.43.336.823.67 1.22.992.121.099.242.188.363.287.3.147.601.294.382.29.244.014.9.067 1.21-.226.897-.939 1.83-1.858 2.726-2.778.886.455 1.96.895 3.151 1.393 1.197.498 2.193.925 2.923 1.189.73.264 1.118.451 1.302.502.802.222 1.731.024 2.09-.65.367-.675.308-1.589.127-2.11a3.549 3.549 0 0 0-.195-.682c-.867-2.367-1.85-4.592-2.83-6.818-.698-1.524-1.286-2.952-1.837-4.297-.276-.675-.941-1.02-1.414-1.053z"></path>
+                          <path d="M22.05 1.577c-.393-.016-.784.08-1.117.235-.484.186-4.92 1.902-9.41 3.64-2.26.873-4.518 1.746-6.256 2.415-1.737.67-3.045 1.168-3.114 1.192-.46.16-1.082.362-1.61.984-.133.155-.267.354-.335.628s-.038.622.095.895c.265.547.714.773 1.244.976 1.76.564 3.58 1.102 5.087 1.608.556 1.96 1.09 3.927 1.618 5.89.174.394.553.54.944.544l.035.001c.32.003.64-.117.888-.37.327-.342.445-.788.42-1.217.002-.6.038-1.24.118-2.01.082-.978.224-1.73.28-2.104.614.262 1.35.57 2.122.9 2.04.87 4.423 1.92 5.2 2.265.712.367 1.465.258 1.943-.12.476-.377.67-.946.5-1.498-.142-.466-.452-.86-.772-1.208-.507-.53-1.28-1.257-2.14-2.054l-3.92-3.63c-.33-.283-.506-.52-.604-.67.195-.15.81-.66 1.504-1.25 1.07-.905 2.262-1.933 2.416-2.07.518-.465.786-1.225.534-1.906-.248-.68-.848-1.02-1.49-1.105-.127-.016-.254-.022-.38-.022zm-.172 1.33c.687.06.87.23.9.288.042.095.03.275-.166.452-.266.23-1.43 1.236-2.4 2.056-.926.784-1.815 1.536-2.08 1.742-.636.49-.705 1.303-.434 1.777.24.424.684.784 1.074 1.123l3.906 3.617c.868.804 1.653 1.545 2.105 2.006.15.158.292.343.356.574.07.25.008.477-.143.597-.128.103-.476.152-.818-.024-.625-.282-2.93-1.29-4.914-2.135-.827-.352-1.614-.682-2.287-.966-.884-.316-1.126.102-1.192.19-.12.47-.145.975-.225 1.91-.079.94-.186 2.06-.262 2.722.135.346-.27.8-.356.849-.41.27-.91.205-1.004 0-.516-1.885-1.04-3.822-1.567-5.763-.08-.292-.134-.42-.51-.562-1.46-.464-3.27-.994-5.026-1.553-.5-.159-.726-.264-.793-.355-.066-.089-.109-.237-.066-.368.037-.114.11-.189.177-.245.342-.283 1.583-.76 3.244-1.402 1.662-.643 3.848-1.496 6.02-2.33 4.362-1.676 8.672-3.32 9.025-3.455.233-.09.348-.058.378-.038.027.02.049.045.042.09z"/>
                           </svg>
                         Telegram
                         </button>
                         <button
                           onClick={() => shareReferral("facebook")}
-                  className="bg-[#4267B2] hover:bg-[#365899] text-white font-medium py-2 px-4 rounded-lg transition-all duration-200 flex items-center"
+                        className="flex items-center gap-2 bg-[#1877F2]/20 hover:bg-[#1877F2]/30 text-white py-2 px-4 rounded-lg transition-colors"
                         >
                           <svg
                             xmlns="http://www.w3.org/2000/svg"
                           width="20"
                           height="20"
                             viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="mr-2"
+                          fill="#1877F2"
                           >
                             <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
                           </svg>
@@ -493,241 +412,204 @@ export default function Referrals() {
                     </div>
                   </div>
 
-            {/* How It Works */}
-            <div className="card p-6">
-              <h2 className="text-lg font-bold mb-4">How It Works</h2>
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 bg-[#0DF5E3]/20 rounded-full flex items-center justify-center mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="28"
-                      height="28"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-[#0DF5E3]"
-                    >
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="9" cy="7" r="4"></circle>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                  </div>
-                  <h3 className="font-medium mb-2">1. Invite Friends</h3>
+                  <div className="p-5 bg-[#0A0F33] rounded-lg border-l-4 border-[#0DF5E3]">
+                    <div className="flex items-start gap-3">
+                      <div className="text-[#0DF5E3] text-2xl">💡</div>
+                      <div>
+                        <h3 className="font-bold mb-1">Pro Tip</h3>
                         <p className="text-sm text-[#B3C6FF]">
-                    Share your unique referral link with friends and community.
+                          The more active users you refer, the higher your tier and rewards. Reach Platinum tier to earn
+                          up to 0.15 SOL per referral!
                         </p>
                       </div>
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 bg-[#8A3FFC]/20 rounded-full flex items-center justify-center mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="28"
-                      height="28"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-[#8A3FFC]"
-                    >
-                      <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-                      <path d="M9 12h6"></path>
-                      <path d="M12 9v6"></path>
-                    </svg>
-                  </div>
-                  <h3 className="font-medium mb-2">2. Friends Join QuestHub</h3>
-                  <p className="text-sm text-[#B3C6FF]">
-                    They sign up using your link and complete their first quest.
-                  </p>
                     </div>
-                <div className="flex flex-col items-center text-center">
-                  <div className="w-16 h-16 bg-[#FFD700]/20 rounded-full flex items-center justify-center mb-4">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="28"
-                      height="28"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-[#FFD700]"
-                    >
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <line x1="12" y1="8" x2="12" y2="12"></line>
-                      <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                    </svg>
                   </div>
-                  <h3 className="font-medium mb-2">3. Earn Rewards</h3>
-                  <p className="text-sm text-[#B3C6FF]">
-                    Both you and your friend earn SOL rewards. Unlock higher tiers for bigger rewards!
-                  </p>
                 </div>
-              </div>
-            </div>
-          </motion.div>
               )}
 
               {activeTab === "history" && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
                 <div className="card p-6">
-              <h2 className="text-lg font-bold mb-4">Referral History</h2>
-              
-              <div className="flex justify-between mb-4 text-sm text-[#B3C6FF]">
-                <span>Total: {referralHistory.length} referrals</span>
-                <span>Completed: {referralHistory.filter(r => r.status === "completed").length}</span>
-              </div>
+                  <h2 className="text-xl font-bold mb-4">Referral History</h2>
+                  <p className="text-[#B3C6FF] mb-6">
+                    Track the status of your referrals and rewards earned.
+                  </p>
 
                     <div className="overflow-x-auto">
-                <table className="min-w-full">
+                      <table className="w-full">
                         <thead>
-                    <tr className="bg-[#151524] text-left">
-                      <th className="py-3 px-4 text-sm font-medium text-[#B3C6FF]">User</th>
-                      <th className="py-3 px-4 text-sm font-medium text-[#B3C6FF]">Date</th>
-                      <th className="py-3 px-4 text-sm font-medium text-[#B3C6FF]">Status</th>
-                      <th className="py-3 px-4 text-sm font-medium text-[#B3C6FF]">Reward</th>
+                        <tr className="text-left border-b border-[#1B2A6E]">
+                          <th className="pb-3 px-2 text-[#B3C6FF] font-medium">User</th>
+                          <th className="pb-3 px-2 text-[#B3C6FF] font-medium">Date</th>
+                          <th className="pb-3 px-2 text-[#B3C6FF] font-medium">Status</th>
+                          <th className="pb-3 px-2 text-[#B3C6FF] font-medium text-right">Reward</th>
                           </tr>
                         </thead>
-                  <tbody className="divide-y divide-[#1D203E]">
+                        <tbody>
                         {referralHistory.map((referral) => (
-                      <tr key={referral.id} className="hover:bg-[#151524]">
-                        <td className="py-3 px-4 whitespace-nowrap">{referral.username}</td>
-                        <td className="py-3 px-4 whitespace-nowrap text-[#B3C6FF]">{formatDate(referral.date)}</td>
-                        <td className="py-3 px-4 whitespace-nowrap">
+                            <motion.tr
+                              key={referral.id}
+                              initial={{ opacity: 0 }}
+                              animate={{ opacity: 1 }}
+                            transition={{ duration: 0.3 }}
+                            className="border-b border-[#1B2A6E] last:border-0 hover:bg-[#17245F]/50 cursor-pointer transition-colors"
+                            >
+                            <td className="py-4 px-2">
+                                <div className="flex items-center gap-2">
+                                <div className="w-8 h-8 rounded-full bg-[#17245F] flex items-center justify-center text-xs">
+                                    {referral.username.charAt(0)}
+                                  </div>
+                                  <span>{referral.username}</span>
+                                </div>
+                              </td>
+                            <td className="py-4 px-2 text-[#B3C6FF]">{formatDate(referral.date)}</td>
+                            <td className="py-4 px-2">
                                 {referral.status === "completed" ? (
-                            <span className="text-[#0DF5E3] flex items-center">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="mr-1"
-                              >
-                                <path d="M20 6 9 17l-5-5"></path>
-                              </svg>
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#0DF5E3]/20 text-[#0DF5E3]">
                                     Completed
                                   </span>
                                 ) : (
-                            <span className="text-[#FFD700] flex items-center">
-                              <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                width="16"
-                                height="16"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                strokeWidth="2"
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                className="mr-1"
-                              >
-                                <circle cx="12" cy="12" r="10"></circle>
-                                <line x1="12" y1="8" x2="12" y2="12"></line>
-                                <line x1="12" y1="16" x2="12.01" y2="16"></line>
-                              </svg>
+                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#FFB400]/20 text-[#FFB400]">
                                     Pending
                                   </span>
                                 )}
                               </td>
-                        <td className="py-3 px-4 whitespace-nowrap font-medium">{referral.reward}</td>
-                      </tr>
+                            <td className="py-4 px-2 text-right font-medium">
+                              {referral.status === "completed" ? (
+                                <span className="text-[#0DF5E3]">{referral.reward}</span>
+                              ) : (
+                                <span className="text-[#B3C6FF]">--</span>
+                              )}
+                            </td>
+                            </motion.tr>
                           ))}
                         </tbody>
                       </table>
                     </div>
                   </div>
-          </motion.div>
               )}
 
               {activeTab === "tiers" && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ duration: 0.3 }}
-          >
                   <div className="card p-6">
-              <h2 className="text-lg font-bold mb-4">Reward Tiers</h2>
+                  <h2 className="text-xl font-bold mb-4">Reward Tiers</h2>
                   <p className="text-[#B3C6FF] mb-6">
-                Invite more friends to unlock higher tiers and earn bigger rewards!
+                    The more friends you refer, the higher your tier and the more rewards you earn.
                     </p>
 
-              <div className="grid grid-cols-1 gap-4">
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
                       {referralTiers.map((tier, index) => (
                         <motion.div
                           key={tier.level}
-                    className={`p-5 rounded-xl border ${
-                      tier.level === referralStats.currentTier ? "border-[#0DF5E3]" : "border-[#1D203E]"
-                    }`}
-                    style={{ backgroundColor: tier.bgColor }}
+                        className="card overflow-hidden"
                           initial={{ opacity: 0, y: 20 }}
                           animate={{ opacity: 1, y: 0 }}
                           transition={{ duration: 0.3, delay: index * 0.1 }}
+                        whileHover={{ y: -5, transition: { duration: 0.2 } }}
                         >
-                    <div className="flex flex-col md:flex-row justify-between">
-                      <div className="flex items-center mb-4 md:mb-0">
-                        <div
-                          className={`w-12 h-12 rounded-full bg-gradient-to-br ${tier.color} flex items-center justify-center mr-4`}
-                        >
-                          <span className="text-xl font-bold">{index + 1}</span>
+                        <div className={`h-2 bg-gradient-to-r ${tier.color}`}></div>
+                        <div className="p-5">
+                          <div className="flex items-center gap-3 mb-4">
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: tier.bgColor }}>
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                width="20"
+                                height="20"
+                                  viewBox="0 0 24 24"
+                                  fill="none"
+                                stroke={tier.iconColor}
+                                  strokeWidth="2"
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                              >
+                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
+                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
+                              </svg>
+                            </div>
+                            <h3 className="text-lg font-bold" style={{ color: tier.iconColor }}>{tier.level}</h3>
                           </div>
+                          
+                          <div className="space-y-3 text-sm">
+                            <div className="flex items-start gap-2">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mt-0.5 text-[#0DF5E3]">
+                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                              </svg>
                               <div>
-                          <h3 className="text-lg font-bold" style={{ color: tier.iconColor }}>
-                            {tier.level}
-                          </h3>
-                          <p className="text-sm text-[#B3C6FF]">{tier.referrals} referrals</p>
+                                <div className="text-[#B3C6FF]">Referrals needed:</div>
+                                <div className="font-medium">{tier.referrals}</div>
                               </div>
                             </div>
-                      <div className="border-l border-[#1D203E] pl-4 flex flex-col">
-                        <div className="mb-2">
-                          <div className="text-sm text-[#B3C6FF]">Reward</div>
+                            
+                            <div className="flex items-start gap-2">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mt-0.5 text-[#0DF5E3]">
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              <div>
+                                <div className="text-[#B3C6FF]">Base reward:</div>
                                 <div className="font-medium">{tier.reward}</div>
                               </div>
+                            </div>
+                            
+                            <div className="flex items-start gap-2">
+                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mt-0.5 text-[#0DF5E3]">
+                                <path d="M12 8V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <path d="M8 12H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+                                </svg>
+                              <div>
+                                <div className="text-[#B3C6FF]">Bonus:</div>
+                                <div className="font-medium">{tier.bonusReward}</div>
+                              </div>
+                              </div>
+                            </div>
+                          </div>
+                        </motion.div>
+                      ))}
+                  </div>
+
+                  <div className="mt-8 p-5 bg-[#0A0F33] rounded-lg border-l-4 border-[#8A3FFC]">
+                    <div className="flex items-start gap-3">
+                      <div className="text-[#8A3FFC] text-2xl">🏆</div>
                         <div>
-                          <div className="text-sm text-[#B3C6FF]">Bonus</div>
-                          <div className="font-medium">{tier.bonusReward}</div>
-                        </div>
+                        <h3 className="font-bold mb-1">Bonus Rewards</h3>
+                        <p className="text-sm text-[#B3C6FF]">
+                          If your referrals complete at least 3 quests, you'll receive an additional 0.02 SOL per active referral!
+                        </p>
                       </div>
                     </div>
-                    {tier.level === referralStats.currentTier && (
-                      <div className="mt-4 bg-[#060B27]/50 p-3 rounded-lg flex items-center">
+                  </div>
+                </div>
+              )}
+            </motion.div>
+          </>
+        ) : (
+          <div className="card p-6 text-center">
+            <div className="w-16 h-16 rounded-full bg-[#0DF5E3]/20 flex items-center justify-center mx-auto mb-4">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
+                width="32"
+                height="32"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                          className="text-[#0DF5E3] mr-2"
+                className="text-[#0DF5E3]"
               >
-                          <path d="M20 6 9 17l-5-5"></path>
+                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+                <circle cx="12" cy="7" r="4"></circle>
               </svg>
-                        <span className="text-[#0DF5E3]">Your Current Tier</span>
-                      </div>
-                    )}
-                  </motion.div>
-                ))}
             </div>
+            <h2 className="text-xl font-bold mb-2">Connect Your Wallet</h2>
+            <p className="text-[#B3C6FF] mb-6">Connect your wallet to access the referral program and start earning rewards.</p>
+            
+            <div className="flex justify-center">
+            <WalletConnect />
             </div>
-          </motion.div>
+          </div>
         )}
       </div>
     </Layout>
