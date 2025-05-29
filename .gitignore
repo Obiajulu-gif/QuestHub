@@ -2,12 +2,7 @@
 
 # dependencies
 /node_modules
-node_modules/
 
-# Make sure node_modules is ignored
-node_modules/
-.next/
-.env
 
 
 # next.js
