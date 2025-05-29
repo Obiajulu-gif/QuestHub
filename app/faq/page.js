@@ -2,7 +2,6 @@
 
 import { useState, useEffect } from "react"
 import { motion, AnimatePresence } from "framer-motion"
-// Update import to use named export
 import { Layout } from "@/components/Layout"
 import Link from "next/link"
 
@@ -10,6 +9,8 @@ import Link from "next/link"
 const faqData = [
   {
     category: "Getting Started",
+    icon: "/icons/rocket.svg",
+    color: "#0DF5E3",
     questions: [
       {
         id: "what-is-questhub",
@@ -33,6 +34,8 @@ const faqData = [
   },
   {
     category: "Quests & Rewards",
+    icon: "/icons/trophy.svg",
+    color: "#8A3FFC",
     questions: [
       {
         id: "quest-types",
@@ -56,6 +59,8 @@ const faqData = [
   },
   {
     category: "Badges & NFTs",
+    icon: "/icons/badge.svg",
+    color: "#FF4ECD",
     questions: [
       {
         id: "what-are-badges",
@@ -79,6 +84,8 @@ const faqData = [
   },
   {
     category: "Account & Profile",
+    icon: "/icons/user.svg",
+    color: "#FFB400",
     questions: [
       {
         id: "create-profile",
@@ -102,6 +109,8 @@ const faqData = [
   },
   {
     category: "Technical & Support",
+    icon: "/icons/support.svg",
+    color: "#FF3D6B",
     questions: [
       {
         id: "transaction-fees",
@@ -131,6 +140,7 @@ export default function FAQ() {
   const [expandedQuestions, setExpandedQuestions] = useState({})
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState([])
+  const [hoverIndex, setHoverIndex] = useState(null)
 
   useEffect(() => {
     // Simulate loading
@@ -169,6 +179,7 @@ export default function FAQ() {
           results.push({
             ...question,
             category: category.category,
+            categoryColor: category.color,
           })
         }
       })
@@ -176,12 +187,15 @@ export default function FAQ() {
 
     setSearchResults(results)
   }
+  
+  // Find the current category object
+  const currentCategory = faqData.find(cat => cat.category === activeCategory) || faqData[0]
 
   if (loading) {
     return (
       <Layout>
         <div className="flex items-center justify-center h-[80vh]">
-          <div className="w-12 h-12 border-4 border-[#00a3ff] border-t-transparent rounded-full animate-spin"></div>
+          <div className="w-12 h-12 border-4 border-[#0DF5E3] border-t-transparent rounded-full animate-spin"></div>
         </div>
       </Layout>
     )
@@ -190,31 +204,36 @@ export default function FAQ() {
   return (
     <Layout>
       <div className="px-4 py-6 md:px-6">
-        <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
+        {/* Header Section */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between mb-8 gap-4">
           <div>
-            <h1 className="text-xl font-bold">❓ Frequently Asked Questions</h1>
-            <p className="text-sm text-gray-400">Find answers to common questions about QuestHub</p>
+            <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center">
+              <span className="mr-2">❓</span> 
+              <span>Frequently Asked</span>
+              <span className="ml-2 glow-text">Questions</span>
+            </h1>
+            <p className="text-[#B3C6FF]">Find answers to common questions about QuestHub</p>
           </div>
 
           <div className="relative">
             <input
               type="text"
               placeholder="Search questions..."
-              className="w-full md:w-64 bg-[#151524] border border-[#252540] rounded-lg px-3 py-2 pr-8 focus:outline-none focus:border-[#00a3ff]"
+              className="w-full md:w-64 bg-[#0F1642] border border-[#1B2A6E] rounded-lg px-4 py-3 pr-10 focus:outline-none focus:border-[#0DF5E3] text-white"
               value={searchQuery}
               onChange={handleSearch}
             />
             <svg
               xmlns="http://www.w3.org/2000/svg"
-              width="16"
-              height="16"
+              width="18"
+              height="18"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
               strokeWidth="2"
               strokeLinecap="round"
               strokeLinejoin="round"
-              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400"
+              className="absolute right-3 top-1/2 transform -translate-y-1/2 text-[#687FCA]"
             >
               <circle cx="11" cy="11" r="8"></circle>
               <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
@@ -224,32 +243,48 @@ export default function FAQ() {
 
         {searchQuery ? (
           // Search results
-          <div className="space-y-6">
-            <h2 className="text-lg font-semibold">
-              Search Results: <span className="text-[#00a3ff]">{searchResults.length}</span> found
+          <motion.div 
+            className="space-y-6"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.3 }}
+          >
+            <h2 className="text-lg font-semibold flex items-center">
+              Search Results: <span className="ml-2 px-3 py-1 rounded-full bg-[#0F1642] text-[#0DF5E3] text-sm">{searchResults.length} found</span>
             </h2>
 
             {searchResults.length > 0 ? (
               <div className="space-y-4">
-                {searchResults.map((result) => (
+                {searchResults.map((result, index) => (
                   <motion.div
                     key={result.id}
                     className="card overflow-hidden"
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    transition={{ duration: 0.3 }}
+                    transition={{ duration: 0.3, delay: index * 0.05 }}
+                    onMouseEnter={() => setHoverIndex(index)}
+                    onMouseLeave={() => setHoverIndex(null)}
                   >
                     <div
-                      className={`p-4 cursor-pointer hover:bg-[#1e1e32] transition-colors ${
-                        expandedQuestions[result.id] ? "border-b border-[#252540]" : ""
+                      className={`p-4 cursor-pointer hover:bg-[#17245F] transition-colors ${
+                        expandedQuestions[result.id] ? "border-b border-[#1B2A6E]" : ""
                       }`}
                       onClick={() => toggleQuestion(result.id)}
+                      style={{
+                        borderLeft: hoverIndex === index ? `4px solid ${result.categoryColor}` : '4px solid transparent',
+                        transition: 'border-left-color 0.3s ease'
+                      }}
                     >
                       <div className="flex items-center justify-between">
                         <div>
-                          <span className="text-xs text-[#00a3ff] mb-1 block">{result.category}</span>
-                          <h3 className="font-medium">{result.question}</h3>
+                          <span className="text-xs px-2 py-0.5 rounded-full" style={{ backgroundColor: `${result.categoryColor}20`, color: result.categoryColor }}>{result.category}</span>
+                          <h3 className="text-base font-medium mt-2">{result.question}</h3>
                         </div>
+                        <div
+                          className={`ml-4 transition-transform duration-300 ${
+                            expandedQuestions[result.id] ? "rotate-180" : ""
+                          }`}
+                        >
                         <svg
                           xmlns="http://www.w3.org/2000/svg"
                           width="20"
@@ -260,12 +295,11 @@ export default function FAQ() {
                           strokeWidth="2"
                           strokeLinecap="round"
                           strokeLinejoin="round"
-                          className={`transform transition-transform ${
-                            expandedQuestions[result.id] ? "rotate-180" : ""
-                          }`}
+                            className="text-[#687FCA]"
                         >
-                          <polyline points="6 9 12 15 18 9"></polyline>
+                            <path d="m6 9 6 6 6-6" />
                         </svg>
+                        </div>
                       </div>
                     </div>
 
@@ -278,7 +312,7 @@ export default function FAQ() {
                           transition={{ duration: 0.3 }}
                           className="overflow-hidden"
                         >
-                          <div className="p-4 bg-[#151524] text-gray-300">{result.answer}</div>
+                          <div className="p-4 bg-[#0A0F33] text-[#B3C6FF]">{result.answer}</div>
                         </motion.div>
                       )}
                     </AnimatePresence>
@@ -286,99 +320,108 @@ export default function FAQ() {
                 ))}
               </div>
             ) : (
-              <div className="card p-8 text-center">
-                <div className="w-16 h-16 bg-[#252540] rounded-full flex items-center justify-center mx-auto mb-4">
-                  <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    width="24"
-                    height="24"
-                    viewBox="0 0 24 24"
-                    fill="none"
-                    stroke="currentColor"
-                    strokeWidth="2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    className="text-gray-400"
-                  >
-                    <circle cx="11" cy="11" r="8"></circle>
-                    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-                  </svg>
-                </div>
+              <div className="card p-6 text-center">
+                <div className="text-4xl mb-4">🔍</div>
                 <h3 className="text-lg font-medium mb-2">No results found</h3>
-                <p className="text-gray-400 mb-4">
-                  We couldn't find any questions matching "{searchQuery}". Try a different search term or browse the
-                  categories below.
+                <p className="text-[#687FCA] mb-4">
+                  Try different keywords or check out the categories below.
                 </p>
                 <button
-                  className="text-[#00a3ff] hover:underline"
-                  onClick={() => {
-                    setSearchQuery("")
-                    setSearchResults([])
-                  }}
+                  onClick={() => setSearchQuery("")}
+                  className="btn-outline text-sm py-2 px-4"
                 >
-                  Clear search
+                  View All Questions
                 </button>
               </div>
             )}
-          </div>
+          </motion.div>
         ) : (
-          // Regular FAQ view
+          // FAQ categories and questions
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-            {/* Categories sidebar */}
+            {/* Categories */}
             <div className="lg:col-span-1">
-              <div className="card p-4 sticky top-4">
-                <h2 className="font-semibold mb-4">Categories</h2>
-                <nav>
-                  <ul className="space-y-2">
+              <div className="card p-1 sticky top-20">
+                <div className="space-y-1">
                     {faqData.map((category) => (
-                      <li key={category.category}>
                         <button
-                          className={`w-full text-left px-3 py-2 rounded-lg transition-colors ${
+                      key={category.category}
+                      onClick={() => setActiveCategory(category.category)}
+                      className={`w-full text-left p-3 rounded-lg transition-all flex items-center gap-3 ${
                             activeCategory === category.category
-                              ? "bg-[#00a3ff] text-white"
-                              : "hover:bg-[#1e1e32] text-gray-300"
-                          }`}
-                          onClick={() => setActiveCategory(category.category)}
-                        >
-                          {category.category}
+                          ? "bg-[#17245F] text-white"
+                          : "hover:bg-[#17245F]/50 text-[#B3C6FF]"
+                      }`}
+                      style={{
+                        borderLeft: activeCategory === category.category ? `4px solid ${category.color}` : '4px solid transparent'
+                      }}
+                    >
+                      <div className="w-8 h-8 rounded-lg flex items-center justify-center" style={{ backgroundColor: `${category.color}20` }}>
+                        <span style={{ color: category.color }}>
+                          {category.category === "Getting Started" ? "🚀" : 
+                           category.category === "Quests & Rewards" ? "🏆" : 
+                           category.category === "Badges & NFTs" ? "🏅" : 
+                           category.category === "Account & Profile" ? "👤" : 
+                           category.category === "Technical & Support" ? "🛠️" : "❓"}
+                        </span>
+                      </div>
+                      <span className="font-medium">{category.category}</span>
                         </button>
-                      </li>
                     ))}
-                  </ul>
-                </nav>
+                </div>
               </div>
             </div>
 
-            {/* Questions and answers */}
+            {/* Questions */}
             <div className="lg:col-span-3">
               <motion.div
                 key={activeCategory}
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ duration: 0.5 }}
+                initial={{ opacity: 0, x: 20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.3 }}
                 className="space-y-6"
               >
-                <h2 className="text-lg font-semibold">{activeCategory}</h2>
+                <div className="flex items-center gap-3 mb-4">
+                  <div className="w-10 h-10 rounded-full flex items-center justify-center" 
+                       style={{ backgroundColor: `${currentCategory.color}20`, color: currentCategory.color }}>
+                    {currentCategory.category === "Getting Started" ? "🚀" : 
+                     currentCategory.category === "Quests & Rewards" ? "🏆" : 
+                     currentCategory.category === "Badges & NFTs" ? "🏅" : 
+                     currentCategory.category === "Account & Profile" ? "👤" : 
+                     currentCategory.category === "Technical & Support" ? "🛠️" : "❓"}
+                  </div>
+                  <h2 className="text-xl font-bold">{activeCategory}</h2>
+                </div>
 
                 <div className="space-y-4">
                   {faqData
-                    .find((category) => category.category === activeCategory)
-                    .questions.map((question) => (
+                    .find((cat) => cat.category === activeCategory)
+                    ?.questions.map((question, index) => (
                       <motion.div
                         key={question.id}
                         className="card overflow-hidden"
                         initial={{ opacity: 0, y: 10 }}
                         animate={{ opacity: 1, y: 0 }}
-                        transition={{ duration: 0.3 }}
+                        transition={{ duration: 0.3, delay: index * 0.05 }}
+                        onMouseEnter={() => setHoverIndex(index)}
+                        onMouseLeave={() => setHoverIndex(null)}
+                        style={{
+                          borderLeft: hoverIndex === index ? `4px solid ${currentCategory.color}` : '4px solid transparent',
+                          transition: 'border-left-color 0.3s ease'
+                        }}
                       >
                         <div
-                          className={`p-4 cursor-pointer hover:bg-[#1e1e32] transition-colors ${
-                            expandedQuestions[question.id] ? "border-b border-[#252540]" : ""
+                          className={`p-4 cursor-pointer hover:bg-[#17245F] transition-colors ${
+                            expandedQuestions[question.id] ? "border-b border-[#1B2A6E]" : ""
                           }`}
                           onClick={() => toggleQuestion(question.id)}
                         >
                           <div className="flex items-center justify-between">
-                            <h3 className="font-medium">{question.question}</h3>
+                            <h3 className="text-base font-medium">{question.question}</h3>
+                            <div
+                              className={`ml-4 transition-transform duration-300 ${
+                                expandedQuestions[question.id] ? "rotate-180" : ""
+                              }`}
+                            >
                             <svg
                               xmlns="http://www.w3.org/2000/svg"
                               width="20"
@@ -389,12 +432,11 @@ export default function FAQ() {
                               strokeWidth="2"
                               strokeLinecap="round"
                               strokeLinejoin="round"
-                              className={`transform transition-transform ${
-                                expandedQuestions[question.id] ? "rotate-180" : ""
-                              }`}
+                                className="text-[#687FCA]"
                             >
-                              <polyline points="6 9 12 15 18 9"></polyline>
+                                <path d="m6 9 6 6 6-6" />
                             </svg>
+                            </div>
                           </div>
                         </div>
 
@@ -407,7 +449,7 @@ export default function FAQ() {
                               transition={{ duration: 0.3 }}
                               className="overflow-hidden"
                             >
-                              <div className="p-4 bg-[#151524] text-gray-300">{question.answer}</div>
+                              <div className="p-4 bg-[#0A0F33] text-[#B3C6FF]">{question.answer}</div>
                             </motion.div>
                           )}
                         </AnimatePresence>
@@ -419,55 +461,19 @@ export default function FAQ() {
           </div>
         )}
 
-        {/* Contact section */}
-        <div className="mt-12 bg-gradient-to-r from-[#151524] to-[#1e1e32] rounded-lg p-6">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <h2 className="text-lg font-semibold mb-2">Still have questions?</h2>
-              <p className="text-gray-300">
-                If you couldn't find the answer to your question, feel free to reach out to our support team.
-              </p>
-            </div>
-            <div className="flex flex-wrap gap-3">
-              <Link
-                href="/community"
-                className="bg-[#252540] hover:bg-[#303050] text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2"
-              >
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="9" cy="7" r="4"></circle>
-                  <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                  <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+        {/* Contact Us Section */}
+        <div className="mt-12 card p-6">
+          <div className="text-center">
+            <h3 className="text-xl font-bold mb-3">Still have questions?</h3>
+            <p className="text-[#B3C6FF] mb-6 max-w-xl mx-auto">
+              Can't find the answer you're looking for? Get in touch with our support team, and we'll be happy to help.
+            </p>
+            <Link href="/contact" className="btn-primary inline-flex items-center gap-2 py-2.5 px-6">
+              Contact Support
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M5 12h14M19 12l-7-7m7 7l-7 7" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
                 </svg>
-                <span>Join Community</span>
               </Link>
-              <button className="bg-[#00a3ff] hover:bg-[#0090e0] text-white px-4 py-2 rounded-lg transition-colors flex items-center gap-2">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="16"
-                  height="16"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                >
-                  <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"></path>
-                </svg>
-                <span>Contact Support</span>
-              </button>
-            </div>
           </div>
         </div>
       </div>

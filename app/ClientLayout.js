@@ -2,9 +2,11 @@
 
 import WalletContextProvider from "@/components/WalletContextProvider"
 import { NotificationProvider } from "@/context/NotificationContext"
-import { AuthProvider } from "@/context/AuthContext"
 import ToastContainer from "@/components/notifications/ToastContainer"
 import { useEffect } from "react"
+import { ScoreProvider } from "@/context/ScoreContext"
+import SensayChatWidget from "@/components/SensayChatWidget"
+import { SensayProvider } from "@/context/SensayContext"
 
 export default function ClientLayout({ children }) {
   useEffect(() => {
@@ -23,13 +25,16 @@ export default function ClientLayout({ children }) {
   }, [])
 
   return (
-    <WalletContextProvider>
-      <AuthProvider>
+    <ScoreProvider>
+      <WalletContextProvider>
         <NotificationProvider>
-          {children}
-          <ToastContainer />
+          <SensayProvider>
+            {children}
+            <ToastContainer />
+            <SensayChatWidget />
+          </SensayProvider>
         </NotificationProvider>
-      </AuthProvider>
-    </WalletContextProvider>
+      </WalletContextProvider>
+    </ScoreProvider>
   )
 }
