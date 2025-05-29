@@ -179,12 +179,6 @@ export default function Community() {
               Connect with fellow questers, join events, and share your experiences
             </p>
           </div>
-
-          {!connected && (
-            <div>
-              <WalletConnect />
-            </div>
-          )}
         </div>
 
         {/* Tabs */}

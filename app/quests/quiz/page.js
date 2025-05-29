@@ -15,6 +15,7 @@ import {
   resetQuiz 
 } from "@/services/questApi"
 import { useScore } from "@/context/ScoreContext"
+import QuestWelcomeMessage from "@/components/QuestWelcomeMessage"
 
 export default function QuizGame() {
   const router = useRouter()
@@ -28,6 +29,7 @@ export default function QuizGame() {
   const [showBreakModal, setShowBreakModal] = useState(false)
   const [breakOptions, setBreakOptions] = useState([])
   const { addReward } = useScore()
+  const [showWelcome, setShowWelcome] = useState(true)
 
   const loadQuestion = async () => {
     try {
@@ -119,6 +121,12 @@ export default function QuizGame() {
 
   return (
     <Layout>
+      {showWelcome && (
+        <QuestWelcomeMessage 
+          gameMode="quiz" 
+          onClose={() => setShowWelcome(false)} 
+        />
+      )}
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Header with navigation */}
         <div className="mb-6">

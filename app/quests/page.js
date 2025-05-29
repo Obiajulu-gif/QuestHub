@@ -5,6 +5,7 @@ import { motion } from "framer-motion"
 import Link from "next/link"
 import { Layout } from "@/components/Layout"
 import FunFactWidget from "@/components/FunFactWidget"
+import QuestWelcomeMessage from "@/components/QuestWelcomeMessage"
 import { getFunFact } from "@/services/questApi"
 
 const questCategories = [
@@ -103,6 +104,7 @@ export default function Quests() {
   const [activeLevel, setActiveLevel] = useState("lvl1")
   const [factData, setFactData] = useState(null)
   const [searchQuery, setSearchQuery] = useState("")
+  const [showWelcome, setShowWelcome] = useState(true)
 
   const filteredQuests = quests.filter((quest) => {
     // Filter by category
@@ -136,6 +138,13 @@ export default function Quests() {
 
   return (
     <Layout>
+      {showWelcome && (
+        <QuestWelcomeMessage 
+          gameMode={null} // null for general welcome
+          onClose={() => setShowWelcome(false)} 
+        />
+      )}
+      
       <div className="container mx-auto px-4 py-8 max-w-6xl">
         <div className="mb-8">
         <div className="flex items-center justify-between mb-6">

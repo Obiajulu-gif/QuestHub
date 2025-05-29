@@ -15,6 +15,7 @@ import {
   getRiddleBreakOptions,
   resetRiddle
 } from "@/services/questApi"
+import QuestWelcomeMessage from "@/components/QuestWelcomeMessage"
 
 export default function RiddleGame() {
   const router = useRouter()
@@ -28,6 +29,7 @@ export default function RiddleGame() {
   const [showBreakModal, setShowBreakModal] = useState(false)
   const [breakOptions, setBreakOptions] = useState("")
   const { addReward } = useScore()
+  const [showWelcome, setShowWelcome] = useState(true)
 
   const loadRiddle = async () => {
     try {
@@ -122,6 +124,12 @@ export default function RiddleGame() {
 
   return (
     <Layout>
+      {showWelcome && (
+        <QuestWelcomeMessage 
+          gameMode="riddles" 
+          onClose={() => setShowWelcome(false)} 
+        />
+      )}
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Header with navigation */}
         <div className="mb-6">

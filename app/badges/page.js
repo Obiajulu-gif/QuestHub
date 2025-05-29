@@ -72,7 +72,7 @@ const badgesData = [
     id: "5",
     name: "Quiz Wizard",
     description: "Answered 20 quiz questions correctly",
-    image: "/badges/quiz-wizard.png",
+    image: "/hero-badges.png",
     rarity: "Common",
     dateEarned: "2023-06-10",
     attributes: [
@@ -86,7 +86,7 @@ const badgesData = [
     id: "6",
     name: "First Quest",
     description: "Completed your first quest",
-    image: "/badges/first-quest.png",
+    image: "/blank-badge.png",
     rarity: "Common",
     dateEarned: "2023-04-16",
     attributes: [
@@ -189,99 +189,66 @@ export default function Badges() {
             <p className="text-sm text-gray-400">Collect NFT badges by completing quests and challenges</p>
           </div>
 
-          {!connected ? (
-            <div>
-              <WalletConnect />
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              <button
-                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
-                  filter === "all" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
-                }`}
-                onClick={() => setFilter("all")}
+          <div className="flex flex-wrap gap-2">
+            <button
+              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
+                filter === "all" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
+              }`}
+              onClick={() => setFilter("all")}
+            >
+              All Badges
+            </button>
+            <button
+              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
+                filter === "owned" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
+              }`}
+              onClick={() => setFilter("owned")}
+            >
+              My Collection
+            </button>
+            <button
+              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
+                filter === "available" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
+              }`}
+              onClick={() => setFilter("available")}
+            >
+              Available
+            </button>
+          </div>
+        </div>
+
+        <>
+          <motion.div
+            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ duration: 0.5 }}
+          >
+            {filteredBadges.map((badge, index) => (
+              <motion.div
+                key={badge.id}
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3, delay: index * 0.1 }}
+                onClick={() => openBadgeDetail(badge)}
               >
-                All Badges
-              </button>
+                <BadgeCard badge={badge} />
+              </motion.div>
+            ))}
+          </motion.div>
+
+          {/* Demo button to earn a badge - for testing notifications */}
+          {filter === "available" && filteredBadges.length > 0 && (
+            <div className="mt-8 text-center">
               <button
-                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
-                  filter === "owned" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
-                }`}
-                onClick={() => setFilter("owned")}
+                className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
+                onClick={() => earnBadge(filteredBadges[0].id)}
               >
-                My Collection
-              </button>
-              <button
-                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
-                  filter === "available" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
-                }`}
-                onClick={() => setFilter("available")}
-              >
-                Available
+                Earn "{filteredBadges[0].name}" Badge (Demo)
               </button>
             </div>
           )}
-        </div>
-
-        {connected ? (
-          <>
-            <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
-            >
-              {filteredBadges.map((badge, index) => (
-                <motion.div
-                  key={badge.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  onClick={() => openBadgeDetail(badge)}
-                >
-                  <BadgeCard badge={badge} />
-                </motion.div>
-              ))}
-            </motion.div>
-
-            {/* Demo button to earn a badge - for testing notifications */}
-            {filter === "available" && filteredBadges.length > 0 && (
-              <div className="mt-8 text-center">
-                <button
-                  className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
-                  onClick={() => earnBadge(filteredBadges[0].id)}
-                >
-                  Earn "{filteredBadges[0].name}" Badge (Demo)
-                </button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-24 h-24 bg-[#151524] rounded-full flex items-center justify-center mb-6">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="40"
-                height="40"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-[#00a3ff]"
-              >
-                <circle cx="12" cy="8" r="7"></circle>
-                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold mb-2">Connect Your Wallet</h2>
-            <p className="text-gray-400 max-w-md mb-6">
-              Connect your wallet to view and collect achievement badges as NFTs on the Solana blockchain.
-            </p>
-            <WalletConnect />
-          </div>
-        )}
+        </>
 
         {/* Badge Detail Modal */}
         {selectedBadge && (

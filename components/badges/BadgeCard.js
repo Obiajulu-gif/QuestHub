@@ -97,31 +97,17 @@ export default function BadgeCard({ badge }) {
             clipPath: "polygon(50% 0%, 100% 25%, 100% 75%, 50% 100%, 0% 75%, 0% 25%)"
           }}></div>
           
-          {badge.image ? (
-            <div className="relative z-10 transform transition-transform duration-700 hover:scale-110 hover:rotate-3">
-              <Image
-                src={badge.image || "/placeholder.svg"}
-                width={150}
-                height={150}
-                alt={badge.name}
-                className="object-contain drop-shadow-lg"
-                loading="lazy"
-                quality={85}
-              />
-            </div>
-          ) : (
-            <div className="relative z-10 transform transition-transform duration-700 hover:scale-110 hover:rotate-3">
-              <Image
-                src={`/blank-badge.png?height=150&width=150&query=badge with ${badge.name}`}
-                width={150}
-                height={150}
-                alt={badge.name}
-                className="object-contain drop-shadow-lg"
-                loading="lazy"
-                quality={85}
-              />
-            </div>
-          )}
+          <div className="relative z-10 transform transition-transform duration-700 hover:scale-110 hover:rotate-3">
+            <Image
+              src={badge.image || "/blank-badge.png"}
+              width={150}
+              height={150}
+              alt={badge.name}
+              className="object-contain drop-shadow-lg"
+              loading="lazy"
+              quality={85}
+            />
+          </div>
         </div>
 
         {/* Rarity tag */}

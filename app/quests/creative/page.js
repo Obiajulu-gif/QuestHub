@@ -15,6 +15,7 @@ import {
   getChallengeScores,
   getChallengeDetails
 } from "@/services/questApi"
+import QuestWelcomeMessage from "@/components/QuestWelcomeMessage"
 
 export default function CreativeChallenge() {
   const router = useRouter()
@@ -31,6 +32,7 @@ export default function CreativeChallenge() {
   const [showScoresModal, setShowScoresModal] = useState(false)
   const [selectedFile, setSelectedFile] = useState(null)
   const { addReward } = useScore()
+  const [showWelcome, setShowWelcome] = useState(true)
 
   const loadPrompt = async () => {
     try {
@@ -144,6 +146,12 @@ export default function CreativeChallenge() {
 
   return (
     <Layout>
+      {showWelcome && (
+        <QuestWelcomeMessage 
+          gameMode="creative" 
+          onClose={() => setShowWelcome(false)} 
+        />
+      )}
       <div className="container mx-auto px-4 py-8 max-w-5xl">
         {/* Header with navigation */}
         <div className="mb-6">
