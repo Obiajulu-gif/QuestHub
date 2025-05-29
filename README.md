@@ -36,12 +36,14 @@ QuestHub is a gamified learning platform that leverages the Sensay (QuestBot) AP
 ## Installation
 1. Clone this repository:
    ```powershell
-   git clone https://github.com/your-org/questhub.git
+   git clone https://github.com/Obiajulu-gif/QuestHub.git
    cd questhub
    ```
 2. Create a `.env.local` file at the project root with your Sensay API key:
    ```text
    Sensay_API=your_sensay_api_key_here
+   SENSAY_ORGANIZATION_ID=orgaization_id_here
+   NEXT_PUBLIC_SENSAY_API_KEY_SECRET=api_key_here
    ```
 
 ## Configuration
