@@ -42,6 +42,10 @@ $replicaPayload = @{
 
 🎮 **Game Modules**
 
+**API Endpoint**: [QuestHub Games](
+https://github.com/Obiajulu-gif/questbot-endpoint)
+
+
 | Module              | API Endpoint         | Key Features                                                             |
 | ------------------- | -------------------- | ------------------------------------------------------------------------ |
 | Quiz Engine         | `/api/quiz/question` | Adaptive questions, progress tracking, MCQ and fill-in-the-blank formats |
@@ -127,8 +131,6 @@ graph TD
 ---
 
 # 🔍 AI Copilot Features
-**API Endpoint**: [QuestHub Games](
-https://github.com/Obiajulu-gif/questbot-endpoint)
 
 Beyond just guiding, Winks acts as an intelligent AI Copilot, providing dynamic assistance and feedback.
 
@@ -216,8 +218,7 @@ function enhanceContext(request) {
 📄 **License & Attribution**
 
 Licensed under **MIT**.
-Uses Sensay AI (separate API credentials required).
-Includes elements from various open-source AI tools with attribution.
+Uses Sensay AI.
 
 ---
 
