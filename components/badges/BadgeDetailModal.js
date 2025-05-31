@@ -7,7 +7,7 @@ import Modal from "@/components/Modal"
 import NFTViewer from "@/components/badges/NFTViewer"
 import { useNotifications } from "@/context/NotificationContext"
 
-export default function BadgeDetailModal({ badge, onClose, showEarnedAnimation = false }) {
+export default function BadgeDetailModal({ badge, onClose, showEarnedAnimation = false, onSend }) {
   const [activeTab, setActiveTab] = useState("details") // details, attributes, nft
   const { addBadgeEarnedNotification } = useNotifications()
   const [showAnimation, setShowAnimation] = useState(showEarnedAnimation)
@@ -145,6 +145,32 @@ export default function BadgeDetailModal({ badge, onClose, showEarnedAnimation =
                 </div>
               )}
             </div>
+
+            {/* Send Badge Button (only show if badge is owned) */}
+            {badge.owned && onSend && (
+              <div className="mt-4">
+                <button
+                  className="w-full bg-[#252540] hover:bg-[#303050] text-white py-2 px-4 rounded-lg flex items-center justify-center gap-2 transition-colors"
+                  onClick={onSend}
+                >
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    width="16"
+                    height="16"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth="2"
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  >
+                    <line x1="22" y1="2" x2="11" y2="13"></line>
+                    <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+                  </svg>
+                  Send to Wallet
+                </button>
+              </div>
+            )}
           </div>
 
           {/* Badge Info */}

@@ -196,7 +196,7 @@ if (!replicaId) {
   const newReplica = await client.replicas.postV1Replicas(API_VERSION, {
     name: "Sample Replica",
     shortDescription: "A sample replica for demonstration",
-    greeting: "Hello, I'm the sample replica. How can I help you today?",
+    greeting: "Hello, I'm the Winks from Replica. How can I help you today?",
     slug: SAMPLE_REPLICA_SLUG,
     ownerID: SAMPLE_USER_ID,
     llm: {

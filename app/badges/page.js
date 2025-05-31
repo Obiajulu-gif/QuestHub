@@ -8,7 +8,8 @@ import { motion } from "framer-motion"
 import { Layout } from "@/components/Layout"
 import BadgeCard from "@/components/badges/BadgeCard"
 import BadgeDetailModal from "@/components/badges/BadgeDetailModal"
-import WalletConnect from "@/components/WalletConnect"
+// WalletConnect is no longer needed
+// import WalletConnect from "@/components/WalletConnect"
 
 // Mock data for badges
 const badgesData = [
@@ -101,20 +102,16 @@ const badgesData = [
 export default function Badges() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const { connected } = useWallet()
+  const { publicKey } = useWallet()
   const [badges, setBadges] = useState(badgesData)
   const [selectedBadge, setSelectedBadge] = useState(null)
-  const [showWalletModal, setShowWalletModal] = useState(false)
   const [filter, setFilter] = useState("all") // all, owned, available
   const [loading, setLoading] = useState(true)
   const [showEarnedAnimation, setShowEarnedAnimation] = useState(false)
+  const [showSendModal, setShowSendModal] = useState(false)
+  const [recipientAddress, setRecipientAddress] = useState("")
 
   useEffect(() => {
-    // Check if wallet is connected
-    if (!connected) {
-      setShowWalletModal(true)
-    }
-
     // Simulate loading
     const timer = setTimeout(() => {
       setLoading(false)
@@ -130,7 +127,7 @@ export default function Badges() {
     }
 
     return () => clearTimeout(timer)
-  }, [connected, searchParams, badges])
+  }, [searchParams, badges])
 
   // Filter badges based on selected filter
   const filteredBadges = badges.filter((badge) => {
@@ -170,6 +167,16 @@ export default function Badges() {
     )
   }
 
+  // Function to send a badge to an account
+  const sendBadge = (badgeId, recipientAddress) => {
+    // Simulate sending badge to recipient
+    console.log(`Sending badge ${badgeId} to ${recipientAddress}...`)
+    // Show success message
+    alert(`Badge successfully sent to ${recipientAddress}`)
+    setShowSendModal(false)
+    setRecipientAddress("")
+  }
+
   if (loading) {
     return (
       <Layout>
@@ -189,107 +196,109 @@ export default function Badges() {
             <p className="text-sm text-gray-400">Collect NFT badges by completing quests and challenges</p>
           </div>
 
-          {!connected ? (
-            <div>
-              <WalletConnect />
-            </div>
-          ) : (
-            <div className="flex flex-wrap gap-2">
-              <button
-                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
-                  filter === "all" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
-                }`}
-                onClick={() => setFilter("all")}
-              >
-                All Badges
-              </button>
-              <button
-                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
-                  filter === "owned" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
-                }`}
-                onClick={() => setFilter("owned")}
-              >
-                My Collection
-              </button>
-              <button
-                className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
-                  filter === "available" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
-                }`}
-                onClick={() => setFilter("available")}
-              >
-                Available
-              </button>
-            </div>
-          )}
+          <div className="flex flex-wrap gap-2">
+            <button
+              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
+                filter === "all" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
+              }`}
+              onClick={() => setFilter("all")}
+            >
+              All Badges
+            </button>
+            <button
+              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
+                filter === "owned" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
+              }`}
+              onClick={() => setFilter("owned")}
+            >
+              My Collection
+            </button>
+            <button
+              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap transition-all ${
+                filter === "available" ? "bg-[#00a3ff] text-white" : "bg-[#151524] text-gray-300 hover:bg-[#252540]"
+              }`}
+              onClick={() => setFilter("available")}
+            >
+              Available
+            </button>
+          </div>
         </div>
 
-        {connected ? (
-          <>
+        <motion.div
+          className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+        >
+          {filteredBadges.map((badge, index) => (
             <motion.div
-              className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.5 }}
+              key={badge.id}
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.3, delay: index * 0.1 }}
+              onClick={() => openBadgeDetail(badge)}
             >
-              {filteredBadges.map((badge, index) => (
-                <motion.div
-                  key={badge.id}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: index * 0.1 }}
-                  onClick={() => openBadgeDetail(badge)}
-                >
-                  <BadgeCard badge={badge} />
-                </motion.div>
-              ))}
+              <BadgeCard badge={badge} />
             </motion.div>
+          ))}
+        </motion.div>
 
-            {/* Demo button to earn a badge - for testing notifications */}
-            {filter === "available" && filteredBadges.length > 0 && (
-              <div className="mt-8 text-center">
-                <button
-                  className="bg-[#00a3ff] hover:bg-[#0090e0] text-white font-medium py-2 px-4 rounded-lg transition-all duration-200"
-                  onClick={() => earnBadge(filteredBadges[0].id)}
-                >
-                  Earn "{filteredBadges[0].name}" Badge (Demo)
-                </button>
-              </div>
-            )}
-          </>
-        ) : (
-          <div className="flex flex-col items-center justify-center py-12 text-center">
-            <div className="w-24 h-24 bg-[#151524] rounded-full flex items-center justify-center mb-6">
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                width="40"
-                height="40"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="2"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                className="text-[#00a3ff]"
-              >
-                <circle cx="12" cy="8" r="7"></circle>
-                <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"></polyline>
-              </svg>
-            </div>
-            <h2 className="text-xl font-bold mb-2">Connect Your Wallet</h2>
-            <p className="text-gray-400 max-w-md mb-6">
-              Connect your wallet to view and collect achievement badges as NFTs on the Solana blockchain.
-            </p>
-            <WalletConnect />
+        {/* Demo button to earn a badge - for testing notifications */}
+        {filter === "available" && filteredBadges.length > 0 && (
+          <div className="mt-8 text-center">
+            <button
+              className="bg-[#00a3ff] hover:bg-[#0080cc] text-white font-semibold py-2 px-6 rounded-lg transition-all duration-200"
+              onClick={() => earnBadge(filteredBadges[0].id)}
+            >
+              Earn a Badge (Demo)
+            </button>
           </div>
         )}
 
-        {/* Badge Detail Modal */}
+        {/* Badge detail modal */}
         {selectedBadge && (
           <BadgeDetailModal
             badge={selectedBadge}
             onClose={closeBadgeDetail}
             showEarnedAnimation={showEarnedAnimation}
+            onSend={() => setShowSendModal(true)}
           />
+        )}
+
+        {/* Send Badge Modal */}
+        {showSendModal && (
+          <div className="fixed inset-0 flex items-center justify-center z-50 bg-black bg-opacity-70">
+            <div className="bg-[#151524] p-6 rounded-xl max-w-md w-full">
+              <h3 className="text-xl font-bold mb-4">Send Badge to Wallet</h3>
+              <p className="text-sm text-gray-400 mb-4">
+                Enter the recipient's wallet address to send this badge as an NFT.
+              </p>
+
+              <input
+                type="text"
+                value={recipientAddress}
+                onChange={(e) => setRecipientAddress(e.target.value)}
+                placeholder="Wallet Address"
+                className="w-full p-3 rounded-lg bg-[#252540] border border-[#353550] text-white mb-4"
+              />
+
+              <div className="flex justify-end gap-2">
+                <button
+                  className="px-4 py-2 rounded-lg text-gray-300 hover:bg-[#252540]"
+                  onClick={() => setShowSendModal(false)}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 rounded-lg bg-[#00a3ff] text-white"
+                  onClick={() => sendBadge(selectedBadge.id, recipientAddress)}
+                  disabled={!recipientAddress}
+                >
+                  Send Badge
+                </button>
+              </div>
+            </div>
+          </div>
         )}
       </div>
     </Layout>

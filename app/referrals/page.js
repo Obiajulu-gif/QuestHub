@@ -1,159 +1,498 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useMemo, useCallback } from "react"
 import { useRouter } from "next/navigation"
-import { motion } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 import { useWallet } from "@solana/wallet-adapter-react"
-// Update import to use named export
 import { Layout } from "@/components/Layout"
-import Image from "next/image"
-import WalletConnect from "@/components/WalletConnect"
 
-// Mock data for referral history
-const referralHistory = [
+// Constants
+const TABS = {
+  LINK: "link",
+  HISTORY: "history",
+  TIERS: "tiers"
+}
+
+const SOCIAL_PLATFORMS = {
+  TWITTER: "twitter",
+  TELEGRAM: "telegram", 
+  FACEBOOK: "facebook"
+}
+
+// Mock data - moved outside component to prevent re-creation
+const REFERRAL_HISTORY = [
   {
     id: 1,
-    username: "CryptoNewbie",
-    date: "2023-11-15T10:23:00Z",
+    username: "Alice",
+    date: "2025-05-20T11:00:00Z",
     status: "completed",
-    reward: "0.05 SOL",
+    reward: "0.01 BNB",
   },
   {
     id: 2,
-    username: "BlockchainFan",
-    date: "2023-11-10T14:45:00Z",
-    status: "completed",
-    reward: "0.05 SOL",
+    username: "Bob",
+    date: "2025-05-18T09:30:00Z",
+    status: "pending",
+    reward: "0.01 BNB",
   },
   {
     id: 3,
-    username: "SolanaUser",
-    date: "2023-11-05T09:12:00Z",
+    username: "Charlie",
+    date: "2025-05-15T14:20:00Z",
     status: "completed",
-    reward: "0.05 SOL",
+    reward: "0.015 BNB",
   },
   {
     id: 4,
-    username: "QuestSeeker",
-    date: "2023-10-28T16:30:00Z",
-    status: "pending",
-    reward: "0.05 SOL",
+    username: "Dana",
+    date: "2025-05-12T16:45:00Z",
+    status: "completed",
+    reward: "0.02 BNB",
+  },
+  {
+    id: 5,
+    username: "Eve",
+    date: "2025-05-10T08:15:00Z",
+    status: "completed",
+    reward: "0.02 BNB",
   },
 ]
 
-// Referral tiers
-const referralTiers = [
+const REFERRAL_TIERS = [
   {
     level: "Bronze",
     referrals: "1-5",
-    reward: "0.05 SOL per referral",
+    reward: "0.01 BNB per referral",
     bonusReward: "None",
     color: "from-[#CD7F32] to-[#A05A2C]",
     iconColor: "#CD7F32",
-    bgColor: "rgba(205, 127, 50, 0.2)"
+    bgColor: "rgba(205, 127, 50, 0.2)",
+    description: "Start your journey and earn for every successful referral.",
+    icon: '✨'
   },
   {
     level: "Silver",
     referrals: "6-15",
-    reward: "0.075 SOL per referral",
-    bonusReward: "0.5 SOL bonus at 10 referrals",
+    reward: "0.015 BNB per referral",
+    bonusReward: "0.1 BNB bonus at 10 referrals",
     color: "from-[#C0C0C0] to-[#A0A0A0]",
     iconColor: "#C0C0C0",
-    bgColor: "rgba(192, 192, 192, 0.2)"
+    bgColor: "rgba(192, 192, 192, 0.2)",
+    description: "Increase your earnings and unlock a bonus for hitting your first milestone.",
+    icon: '💎'
   },
   {
     level: "Gold",
     referrals: "16-30",
-    reward: "0.1 SOL per referral",
-    bonusReward: "1 SOL bonus at 20 referrals",
+    reward: "0.02 BNB per referral",
+    bonusReward: "0.2 BNB bonus at 20 referrals",
     color: "from-[#FFD700] to-[#FFA500]",
     iconColor: "#FFD700",
-    bgColor: "rgba(255, 215, 0, 0.2)"
+    bgColor: "rgba(255, 215, 0, 0.2)",
+    description: "Reach for gold with higher per-referral rewards and a significant bonus.",
+    icon: '🏆'
   },
   {
     level: "Platinum",
     referrals: "31+",
-    reward: "0.15 SOL per referral",
-    bonusReward: "2 SOL bonus at 50 referrals",
+    reward: "0.025 BNB per referral",
+    bonusReward: "0.5 BNB bonus at 50 referrals",
     color: "from-[#E5E4E2] to-[#8A9A9A]",
     iconColor: "#E5E4E2",
-    bgColor: "rgba(229, 228, 226, 0.2)"
+    bgColor: "rgba(229, 228, 226, 0.2)",
+    description: "Achieve elite status for maximum rewards and a grand bonus for your dedication.",
+    icon: '👑'
   },
 ]
 
+// Animation variants
+const fadeInUp = {
+  initial: { opacity: 0, y: 20 },
+  animate: { opacity: 1, y: 0 },
+  exit: { opacity: 0, y: -20 }
+}
+
+const cardHover = {
+  whileHover: { y: -2 },
+  transition: { duration: 0.2 }
+}
+
+// Utility functions
+const formatDate = (dateString) => {
+  return new Date(dateString).toLocaleDateString("en-US", {
+    year: "numeric",
+    month: "short",
+    day: "numeric",
+  })
+}
+
+const parseRewardValue = (reward) => parseFloat(reward.replace(" BNB", ""))
+
+// Custom hooks
+const useReferralStats = (referralHistory) => {
+  return useMemo(() => {
+    const totalReferrals = referralHistory.length
+    const totalRewards = referralHistory
+      .reduce((sum, referral) => sum + parseRewardValue(referral.reward), 0)
+      .toFixed(2)
+    
+    return { totalReferrals, totalRewards }
+  }, [referralHistory])
+}
+
+const useCurrentTier = (totalReferrals) => {
+  return useMemo(() => {
+    const currentTier = REFERRAL_TIERS.find(tier => {
+      const [min, max] = tier.referrals.split('-').map(s => parseInt(s))
+      if (tier.referrals.includes('+')) {
+        return totalReferrals >= min
+      }
+      return totalReferrals >= min && totalReferrals <= max
+    }) || REFERRAL_TIERS[0]
+
+    const nextTier = REFERRAL_TIERS[REFERRAL_TIERS.indexOf(currentTier) + 1]
+    const referralsNeededForNextTier = nextTier 
+      ? parseInt(nextTier.referrals.split('-')[0]) - totalReferrals 
+      : 0
+
+    return { currentTier, nextTier, referralsNeededForNextTier }
+  }, [totalReferrals])
+}
+
+// Sub-components for better organization
+const LoadingSpinner = () => (
+  <div className="flex items-center justify-center h-[80vh]">
+    <div className="w-12 h-12 border-4 border-[#00a3ff] border-t-transparent rounded-full animate-spin"></div>
+  </div>
+)
+
+const StatCard = ({ icon, title, value, delay = 0, bgColor = "#00a3ff" }) => (
+  <motion.div
+    className="p-5 rounded-xl bg-[#151524] border border-[#252540] shadow-md"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3, delay }}
+    {...cardHover}
+  >
+    <div className="flex items-center gap-4">
+      <div 
+        className="w-12 h-12 rounded-lg flex items-center justify-center"
+        style={{ backgroundColor: `${bgColor}20` }}
+      >
+        {icon}
+      </div>
+      <div>
+        <div className="text-sm text-gray-400">{title}</div>
+        <div className="text-2xl font-bold text-white">{value}</div>
+      </div>
+    </div>
+  </motion.div>
+)
+
+const TierProgressCard = ({ currentTier, nextTier, referralsNeededForNextTier }) => (
+  <motion.div
+    className="p-5 rounded-xl bg-[#151524] border border-[#252540] shadow-md"
+    initial={{ opacity: 0, y: 20 }}
+    animate={{ opacity: 1, y: 0 }}
+    transition={{ duration: 0.3, delay: 0.2 }}
+    {...cardHover}
+  >
+    <div className="flex items-center gap-4">
+      <div 
+        className="w-12 h-12 rounded-lg flex items-center justify-center flex-shrink-0"
+        style={{ 
+          backgroundColor: currentTier.bgColor, 
+          border: `1px solid ${currentTier.iconColor}` 
+        }}
+      >
+        <span className="text-xl" style={{ color: currentTier.iconColor }}>
+          {currentTier.icon}
+        </span>
+      </div>
+      <div>
+        <div className="text-sm text-gray-400">Your Current Tier</div>
+        <div className="text-2xl font-bold text-white">{currentTier.level}</div>
+        {nextTier ? (
+          <p className="text-xs text-gray-500 mt-1">
+            {referralsNeededForNextTier} more referrals to reach{' '}
+            <span className="text-[#00a3ff] font-semibold">{nextTier.level}</span> tier!
+          </p>
+        ) : (
+          <p className="text-xs text-gray-500 mt-1">You've reached the highest tier!</p>
+        )}
+      </div>
+    </div>
+  </motion.div>
+)
+
+const TabButton = ({ isActive, onClick, children }) => (
+  <button
+    className={`px-4 py-2 rounded-t-lg text-sm whitespace-nowrap transition-all ${
+      isActive 
+        ? "bg-[#151524] text-[#00a3ff] border border-b-0 border-gray-700" 
+        : "text-gray-400 hover:text-white"
+    }`}
+    onClick={onClick}
+  >
+    {children}
+  </button>
+)
+
+const SocialShareButton = ({ platform, onShare, icon, label, bgColor, hoverColor }) => (
+  <motion.button
+    whileHover={{ scale: 1.03 }}
+    whileTap={{ scale: 0.97 }}
+    onClick={() => onShare(platform)}
+    className={`flex items-center px-4 py-2 ${bgColor} text-white rounded-md font-medium shadow-sm ${hoverColor} transition-all duration-200`}
+  >
+    <i className={`${icon} mr-2`}></i> {label}
+  </motion.button>
+)
+
+const ReferralLinkTab = ({ referralLink, onCopy, copied, onShare }) => (
+  <motion.div
+    key="link-tab"
+    {...fadeInUp}
+    transition={{ duration: 0.3 }}
+    className="p-6 rounded-xl bg-[#151524] border border-[#252540] shadow-md"
+  >
+    <h2 className="text-xl font-bold mb-4">Your Referral Link</h2>
+    <p className="text-sm text-gray-400 mb-4">
+      Share this link with your friends to invite them to QuestHub!
+    </p>
+    <div className="flex flex-col sm:flex-row items-center space-y-3 sm:space-y-0 sm:space-x-3 mb-6">
+      <div className="relative flex-grow w-full">
+        <input
+          type="text"
+          readOnly
+          value={referralLink}
+          className="w-full p-3 rounded-lg bg-[#252540] border border-[#353550] text-white focus:outline-none focus:ring-1 focus:ring-[#00a3ff]"
+        />
+        <button
+          onClick={onCopy}
+          className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1.5 rounded-md bg-[#00a3ff] text-white text-xs font-semibold hover:bg-[#0080cc] transition-colors"
+        >
+          {copied ? "Copied!" : "Copy"}
+        </button>
+      </div>
+    </div>
+    <div className="flex flex-wrap gap-3 justify-center">
+      <SocialShareButton
+        platform={SOCIAL_PLATFORMS.TWITTER}
+        onShare={onShare}
+        icon="fab fa-twitter"
+        label="Twitter"
+        bgColor="bg-[#1DA1F2]"
+        hoverColor="hover:bg-[#1A91DA]"
+      />
+      <SocialShareButton
+        platform={SOCIAL_PLATFORMS.TELEGRAM}
+        onShare={onShare}
+        icon="fab fa-telegram-plane"
+        label="Telegram"
+        bgColor="bg-[#0088CC]"
+        hoverColor="hover:bg-[#007AB8]"
+      />
+      <SocialShareButton
+        platform={SOCIAL_PLATFORMS.FACEBOOK}
+        onShare={onShare}
+        icon="fab fa-facebook-f"
+        label="Facebook"
+        bgColor="bg-[#1877F2]"
+        hoverColor="hover:bg-[#156DCF]"
+      />
+    </div>
+  </motion.div>
+)
+
+const ReferralHistoryTab = ({ referralHistory, onSwitchToLink }) => (
+  <motion.div
+    key="history-tab"
+    {...fadeInUp}
+    transition={{ duration: 0.3 }}
+    className="p-6 rounded-xl bg-[#151524] border border-[#252540] shadow-md"
+  >
+    <h2 className="text-xl font-bold mb-4">Referral Activity Log</h2>
+    {referralHistory.length > 0 ? (
+      <div className="overflow-x-auto custom-scrollbar">
+        <table className="min-w-full bg-[#151524] rounded-lg">
+          <thead className="sticky top-0 bg-[#151524] z-20">
+            <tr className="text-left text-gray-400 border-b border-gray-700 text-sm">
+              <th className="py-2 px-3 font-semibold">ID</th>
+              <th className="py-2 px-3 font-semibold">Referral Username</th>
+              <th className="py-2 px-3 font-semibold">Date Joined</th>
+              <th className="py-2 px-3 font-semibold">Status</th>
+              <th className="py-2 px-3 font-semibold">Reward Earned</th>
+            </tr>
+          </thead>
+          <tbody>
+            {referralHistory.map((referral) => (
+              <motion.tr
+                key={referral.id}
+                className="border-b border-[#252540] last:border-b-0 hover:bg-[#252540] transition-colors duration-200"
+                initial={{ opacity: 0, x: -10 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.2, delay: referral.id * 0.05 }}
+              >
+                <td className="py-3 px-3 text-gray-300">{referral.id}</td>
+                <td className="py-3 px-3 font-medium text-white">{referral.username}</td>
+                <td className="py-3 px-3 text-gray-400 text-xs">{formatDate(referral.date)}</td>
+                <td className="py-3 px-3">
+                  <span
+                    className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
+                      referral.status === "completed"
+                        ? "bg-green-500/20 text-green-400"
+                        : "bg-yellow-500/20 text-yellow-400"
+                    }`}
+                  >
+                    {referral.status.toUpperCase()}
+                  </span>
+                </td>
+                <td className="py-3 px-3 font-semibold text-white">{referral.reward}</td>
+              </motion.tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+    ) : (
+      <div className="text-center py-8">
+        <p className="text-gray-400 text-base mb-3">
+          No referral history yet. Start inviting friends to see your progress here!
+        </p>
+        <button
+          onClick={onSwitchToLink}
+          className="bg-[#00a3ff] hover:bg-[#0080cc] text-white font-semibold py-2 px-5 rounded-lg transition-all duration-200"
+        >
+          Get Your Referral Link
+        </button>
+      </div>
+    )}
+  </motion.div>
+)
+
+const TierCard = ({ tier, isCurrentTier, totalReferrals, index }) => (
+  <motion.div
+    className={`relative p-5 rounded-lg overflow-hidden shadow-sm border ${
+      isCurrentTier ? 'border-[#00a3ff]' : 'border-[#252540]'
+    } bg-gradient-to-br ${tier.color} transform transition-all duration-300`}
+    initial={{ opacity: 0, scale: 0.95 }}
+    animate={{ opacity: 1, scale: 1 }}
+    transition={{ duration: 0.3, delay: index * 0.1 }}
+    whileHover={{ 
+      scale: 1.02, 
+      boxShadow: `0 0 10px ${tier.iconColor}80` 
+    }}
+  >
+    <div className="absolute inset-0 opacity-20" style={{ backgroundColor: tier.bgColor }}></div>
+    {isCurrentTier && (
+      <motion.span
+        className="absolute top-2 right-2 bg-[#00a3ff] text-white text-xs font-semibold px-2 py-0.5 rounded-full uppercase"
+        initial={{ opacity: 0, y: -10 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        Your Tier
+      </motion.span>
+    )}
+    <div className="relative z-10 text-white">
+      <div className="flex items-center justify-between mb-2">
+        <h3 className="text-xl font-bold flex items-center">
+          <span className="mr-2 text-2xl" style={{ color: tier.iconColor }}>
+            {tier.icon}
+          </span>
+          {tier.level}
+        </h3>
+        {isCurrentTier && (
+          <span className="text-xs font-semibold text-gray-300">
+            {totalReferrals} / {tier.referrals.includes('+') 
+              ? `${parseInt(tier.referrals.split('+')[0])}+` 
+              : tier.referrals.split('-')[1]
+            }
+          </span>
+        )}
+      </div>
+      <p className="text-sm text-gray-400 mb-2">{tier.description}</p>
+      <ul className="text-sm text-gray-300 space-y-1">
+        <li><span className="font-semibold">Referrals:</span> {tier.referrals}</li>
+        <li><span className="font-semibold">Reward:</span> {tier.reward}</li>
+        <li><span className="font-semibold">Bonus:</span> {tier.bonusReward}</li>
+      </ul>
+    </div>
+  </motion.div>
+)
+
+const ReferralTiersTab = ({ currentTier, totalReferrals }) => (
+  <motion.div
+    key="tiers-tab"
+    {...fadeInUp}
+    transition={{ duration: 0.3 }}
+    className="p-6 rounded-xl bg-[#151524] border border-[#252540] shadow-md"
+  >
+    <h2 className="text-xl font-bold mb-4 text-center">Referral Tier Structure</h2>
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+      {REFERRAL_TIERS.map((tier, index) => (
+        <TierCard
+          key={tier.level}
+          tier={tier}
+          isCurrentTier={tier.level === currentTier.level}
+          totalReferrals={totalReferrals}
+          index={index}
+        />
+      ))}
+    </div>
+  </motion.div>
+)
+
+// Main component
 export default function Referrals() {
   const router = useRouter()
-  const { connected, publicKey } = useWallet()
+  const { publicKey } = useWallet()
   const [loading, setLoading] = useState(true)
   const [referralCode, setReferralCode] = useState("")
   const [referralLink, setReferralLink] = useState("")
   const [copied, setCopied] = useState(false)
-  const [activeTab, setActiveTab] = useState("link") // link, history, tiers
+  const [activeTab, setActiveTab] = useState(TABS.LINK)
 
+  // Custom hooks
+  const { totalReferrals, totalRewards } = useReferralStats(REFERRAL_HISTORY)
+  const { currentTier, nextTier, referralsNeededForNextTier } = useCurrentTier(totalReferrals)
+
+  // Effects
   useEffect(() => {
-    // Simulate loading
-    const timer = setTimeout(() => {
-      setLoading(false)
-    }, 1000)
-
-    // Generate referral code and link if wallet is connected
-    if (connected && publicKey) {
-      const code = publicKey.toString().slice(0, 8)
-      setReferralCode(code)
-      setReferralLink(`https://questhub.io/join?ref=${code}`)
-    }
-
+    const timer = setTimeout(() => setLoading(false), 1000)
+    const simulatedCode = "Q3sth8b5"
+    setReferralCode(simulatedCode)
+    setReferralLink(`https://questhub.io/join?ref=${simulatedCode}`)
     return () => clearTimeout(timer)
-  }, [connected, publicKey])
+  }, [])
 
-  // Copy referral link to clipboard
-  const copyToClipboard = () => {
+  // Event handlers
+  const copyToClipboard = useCallback(() => {
     navigator.clipboard.writeText(referralLink)
     setCopied(true)
     setTimeout(() => setCopied(false), 2000)
-  }
+  }, [referralLink])
 
-  // Format date for display
-  const formatDate = (dateString) => {
-    const date = new Date(dateString)
-    return date.toLocaleDateString("en-US", {
-      year: "numeric",
-      month: "short",
-      day: "numeric",
-    })
-  }
-
-  // Share referral link
-  const shareReferral = (platform) => {
-    let shareUrl = ""
-
-    switch (platform) {
-      case "twitter":
-        shareUrl = `https://twitter.com/intent/tweet?text=Join%20me%20on%20QuestHub%20and%20earn%20rewards%20for%20completing%20quests!%20Use%20my%20referral%20link:%20${encodeURIComponent(
-          referralLink,
-        )}`
-        break
-      case "telegram":
-        shareUrl = `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=Join%20me%20on%20QuestHub%20and%20earn%20rewards%20for%20completing%20quests!`
-        break
-      case "facebook":
-        shareUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`
-        break
-      default:
-        break
+  const shareReferral = useCallback((platform) => {
+    const shareUrls = {
+      [SOCIAL_PLATFORMS.TWITTER]: `https://twitter.com/intent/tweet?text=Join%20me%20on%20QuestHub%20and%20earn%20rewards%20for%20completing%20quests!%20Use%20my%20referral%20link:%20${encodeURIComponent(referralLink)}`,
+      [SOCIAL_PLATFORMS.TELEGRAM]: `https://t.me/share/url?url=${encodeURIComponent(referralLink)}&text=Join%20me%20on%20QuestHub%20and%20earn%20rewards%20for%20completing%20quests!`,
+      [SOCIAL_PLATFORMS.FACEBOOK]: `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(referralLink)}`
     }
 
+    const shareUrl = shareUrls[platform]
     if (shareUrl) {
       window.open(shareUrl, "_blank")
     }
-  }
+  }, [referralLink])
+
+  const handleTabChange = useCallback((tab) => setActiveTab(tab), [])
+  const handleSwitchToLink = useCallback(() => setActiveTab(TABS.LINK), [])
 
   if (loading) {
     return (
       <Layout>
-        <div className="flex items-center justify-center h-[80vh]">
-          <div className="w-12 h-12 border-4 border-[#0DF5E3] border-t-transparent rounded-full animate-spin"></div>
-        </div>
+        <LoadingSpinner />
       </Layout>
     )
   }
@@ -161,456 +500,126 @@ export default function Referrals() {
   return (
     <Layout>
       <div className="px-4 py-6 md:px-6">
+        {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center justify-between mb-6 gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold mb-2 flex items-center">
-              <span className="mr-2">🔗</span> 
-              <span>Referral</span>
-              <span className="ml-2 glow-text">Program</span>
-            </h1>
-            <p className="text-[#B3C6FF]">Invite friends and earn rewards when they join QuestHub</p>
+            <h1 className="text-xl font-bold">🔗 Referral Program</h1>
+            <p className="text-sm text-gray-400">
+              Invite friends and earn rewards when they join QuestHub
+            </p>
           </div>
-
-          {!connected && (
-            <div>
-              <WalletConnect />
-            </div>
-          )}
         </div>
 
-        {connected ? (
-          <>
-            {/* Referral Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <motion.div
-                className="card p-5"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#0DF5E3]/20 flex items-center justify-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-[#0DF5E3]"
-                    >
-                      <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                      <circle cx="9" cy="7" r="4"></circle>
-                      <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
-                      <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-sm text-[#B3C6FF]">Total Referrals</div>
-                    <div className="text-2xl font-bold">3</div>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="card p-5"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.1 }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#FFD700]/20 flex items-center justify-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-[#FFD700]"
-                    >
-                      <circle cx="12" cy="12" r="10"></circle>
-                      <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
-                      <line x1="12" y1="17" x2="12.01" y2="17"></line>
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-sm text-[#B3C6FF]">Total Rewards</div>
-                    <div className="text-2xl font-bold">0.15 SOL</div>
-                  </div>
-                </div>
-              </motion.div>
-
-              <motion.div
-                className="card p-5"
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3, delay: 0.2 }}
-                whileHover={{ y: -5, transition: { duration: 0.2 } }}
-              >
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 rounded-lg bg-[#8A3FFC]/20 flex items-center justify-center">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      width="24"
-                      height="24"
-                      viewBox="0 0 24 24"
-                      fill="none"
-                      stroke="currentColor"
-                      strokeWidth="2"
-                      strokeLinecap="round"
-                      strokeLinejoin="round"
-                      className="text-[#8A3FFC]"
-                    >
-                      <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                      <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                    </svg>
-                  </div>
-                  <div>
-                    <div className="text-sm text-[#B3C6FF]">Current Tier</div>
-                    <div className="text-2xl font-bold">Bronze</div>
-                  </div>
-                </div>
-              </motion.div>
-            </div>
-
-            {/* Tabs */}
-            <div className="flex overflow-x-auto pb-2 mb-6 gap-2 hide-scrollbar">
-              <button
-                className={`px-5 py-2.5 rounded-lg text-sm whitespace-nowrap transition-all ${
-                  activeTab === "link"
-                    ? "bg-[#0DF5E3] text-[#060B27] font-medium"
-                    : "bg-[#0F1642] text-[#B3C6FF] hover:bg-[#17245F]"
-                }`}
-                onClick={() => setActiveTab("link")}
-              >
-                Your Referral Link
-              </button>
-              <button
-                className={`px-5 py-2.5 rounded-lg text-sm whitespace-nowrap transition-all ${
-                  activeTab === "history"
-                    ? "bg-[#0DF5E3] text-[#060B27] font-medium"
-                    : "bg-[#0F1642] text-[#B3C6FF] hover:bg-[#17245F]"
-                }`}
-                onClick={() => setActiveTab("history")}
-              >
-                Referral History
-              </button>
-              <button
-                className={`px-5 py-2.5 rounded-lg text-sm whitespace-nowrap transition-all ${
-                  activeTab === "tiers"
-                    ? "bg-[#0DF5E3] text-[#060B27] font-medium"
-                    : "bg-[#0F1642] text-[#B3C6FF] hover:bg-[#17245F]"
-                }`}
-                onClick={() => setActiveTab("tiers")}
-              >
-                Reward Tiers
-              </button>
-            </div>
-
-            {/* Tab Content */}
-            <motion.div
-              key={activeTab}
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.3 }}
-            >
-              {activeTab === "link" && (
-                  <div className="card p-6">
-                  <h2 className="text-xl font-bold mb-4">Your Referral Link</h2>
-                  <p className="text-[#B3C6FF] mb-6">
-                    Share your unique referral link with friends and earn rewards when they join QuestHub and complete
-                    quests.
-                    </p>
-
-                  <div className="mb-6">
-                    <label className="text-sm text-[#B3C6FF] mb-2 block">Your Referral Code</label>
-                    <div className="flex items-center gap-2">
-                      <div className="bg-[#0A0F33] border border-[#1B2A6E] rounded-lg px-4 py-3 flex-grow text-white font-mono">
-                        {referralCode}
-                      </div>
-                      <button
-                        onClick={copyToClipboard}
-                        className="btn-outline py-3 px-4 flex-shrink-0"
-                      >
-                        {copied ? "Copied!" : "Copy"}
-                      </button>
-                    </div>
-                    </div>
-
-                  <div className="mb-8">
-                    <label className="text-sm text-[#B3C6FF] mb-2 block">Your Referral Link</label>
-                    <div className="flex items-center gap-2">
-                      <div className="bg-[#0A0F33] border border-[#1B2A6E] rounded-lg px-4 py-3 flex-grow text-white truncate font-mono">
-                        {referralLink}
-                      </div>
-                      <button
-                        onClick={copyToClipboard}
-                        className="btn-outline py-3 px-4 flex-shrink-0"
-                      >
-                        {copied ? "Copied!" : "Copy"}
-                      </button>
-                      </div>
-                    </div>
-
-                  <div className="bg-[#0A0F33] rounded-xl p-6 mb-6 border border-[#1B2A6E]">
-                    <h3 className="text-lg font-bold mb-4">Share Your Link</h3>
-                      <div className="flex flex-wrap gap-3">
-                        <button
-                          onClick={() => shareReferral("twitter")}
-                        className="flex items-center gap-2 bg-[#1DA1F2]/20 hover:bg-[#1DA1F2]/30 text-white py-2 px-4 rounded-lg transition-colors"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
-                            viewBox="0 0 24 24"
-                          fill="#1DA1F2"
-                          >
-                            <path d="M23 3a10.9 10.9 0 0 1-3.14 1.53 4.48 4.48 0 0 0-7.86 3v1A10.66 10.66 0 0 1 3 4s-4 9 5 13a11.64 11.64 0 0 1-7 2c9 5 20 0 20-11.5a4.5 4.5 0 0 0-.08-.83A7.72 7.72 0 0 0 23 3z"></path>
-                          </svg>
-                        Twitter
-                        </button>
-                        <button
-                          onClick={() => shareReferral("telegram")}
-                        className="flex items-center gap-2 bg-[#0088cc]/20 hover:bg-[#0088cc]/30 text-white py-2 px-4 rounded-lg transition-colors"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
-                            viewBox="0 0 24 24"
-                          fill="#0088cc"
-                          >
-                          <path d="M22.05 1.577c-.393-.016-.784.08-1.117.235-.484.186-4.92 1.902-9.41 3.64-2.26.873-4.518 1.746-6.256 2.415-1.737.67-3.045 1.168-3.114 1.192-.46.16-1.082.362-1.61.984-.133.155-.267.354-.335.628s-.038.622.095.895c.265.547.714.773 1.244.976 1.76.564 3.58 1.102 5.087 1.608.556 1.96 1.09 3.927 1.618 5.89.174.394.553.54.944.544l.035.001c.32.003.64-.117.888-.37.327-.342.445-.788.42-1.217.002-.6.038-1.24.118-2.01.082-.978.224-1.73.28-2.104.614.262 1.35.57 2.122.9 2.04.87 4.423 1.92 5.2 2.265.712.367 1.465.258 1.943-.12.476-.377.67-.946.5-1.498-.142-.466-.452-.86-.772-1.208-.507-.53-1.28-1.257-2.14-2.054l-3.92-3.63c-.33-.283-.506-.52-.604-.67.195-.15.81-.66 1.504-1.25 1.07-.905 2.262-1.933 2.416-2.07.518-.465.786-1.225.534-1.906-.248-.68-.848-1.02-1.49-1.105-.127-.016-.254-.022-.38-.022zm-.172 1.33c.687.06.87.23.9.288.042.095.03.275-.166.452-.266.23-1.43 1.236-2.4 2.056-.926.784-1.815 1.536-2.08 1.742-.636.49-.705 1.303-.434 1.777.24.424.684.784 1.074 1.123l3.906 3.617c.868.804 1.653 1.545 2.105 2.006.15.158.292.343.356.574.07.25.008.477-.143.597-.128.103-.476.152-.818-.024-.625-.282-2.93-1.29-4.914-2.135-.827-.352-1.614-.682-2.287-.966-.884-.316-1.126.102-1.192.19-.12.47-.145.975-.225 1.91-.079.94-.186 2.06-.262 2.722.135.346-.27.8-.356.849-.41.27-.91.205-1.004 0-.516-1.885-1.04-3.822-1.567-5.763-.08-.292-.134-.42-.51-.562-1.46-.464-3.27-.994-5.026-1.553-.5-.159-.726-.264-.793-.355-.066-.089-.109-.237-.066-.368.037-.114.11-.189.177-.245.342-.283 1.583-.76 3.244-1.402 1.662-.643 3.848-1.496 6.02-2.33 4.362-1.676 8.672-3.32 9.025-3.455.233-.09.348-.058.378-.038.027.02.049.045.042.09z"/>
-                          </svg>
-                        Telegram
-                        </button>
-                        <button
-                          onClick={() => shareReferral("facebook")}
-                        className="flex items-center gap-2 bg-[#1877F2]/20 hover:bg-[#1877F2]/30 text-white py-2 px-4 rounded-lg transition-colors"
-                        >
-                          <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                          width="20"
-                          height="20"
-                            viewBox="0 0 24 24"
-                          fill="#1877F2"
-                          >
-                            <path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"></path>
-                          </svg>
-                        Facebook
-                        </button>
-                    </div>
-                  </div>
-
-                  <div className="p-5 bg-[#0A0F33] rounded-lg border-l-4 border-[#0DF5E3]">
-                    <div className="flex items-start gap-3">
-                      <div className="text-[#0DF5E3] text-2xl">💡</div>
-                      <div>
-                        <h3 className="font-bold mb-1">Pro Tip</h3>
-                        <p className="text-sm text-[#B3C6FF]">
-                          The more active users you refer, the higher your tier and rewards. Reach Platinum tier to earn
-                          up to 0.15 SOL per referral!
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-
-              {activeTab === "history" && (
-                <div className="card p-6">
-                  <h2 className="text-xl font-bold mb-4">Referral History</h2>
-                  <p className="text-[#B3C6FF] mb-6">
-                    Track the status of your referrals and rewards earned.
-                  </p>
-
-                    <div className="overflow-x-auto">
-                      <table className="w-full">
-                        <thead>
-                        <tr className="text-left border-b border-[#1B2A6E]">
-                          <th className="pb-3 px-2 text-[#B3C6FF] font-medium">User</th>
-                          <th className="pb-3 px-2 text-[#B3C6FF] font-medium">Date</th>
-                          <th className="pb-3 px-2 text-[#B3C6FF] font-medium">Status</th>
-                          <th className="pb-3 px-2 text-[#B3C6FF] font-medium text-right">Reward</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                        {referralHistory.map((referral) => (
-                            <motion.tr
-                              key={referral.id}
-                              initial={{ opacity: 0 }}
-                              animate={{ opacity: 1 }}
-                            transition={{ duration: 0.3 }}
-                            className="border-b border-[#1B2A6E] last:border-0 hover:bg-[#17245F]/50 cursor-pointer transition-colors"
-                            >
-                            <td className="py-4 px-2">
-                                <div className="flex items-center gap-2">
-                                <div className="w-8 h-8 rounded-full bg-[#17245F] flex items-center justify-center text-xs">
-                                    {referral.username.charAt(0)}
-                                  </div>
-                                  <span>{referral.username}</span>
-                                </div>
-                              </td>
-                            <td className="py-4 px-2 text-[#B3C6FF]">{formatDate(referral.date)}</td>
-                            <td className="py-4 px-2">
-                                {referral.status === "completed" ? (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#0DF5E3]/20 text-[#0DF5E3]">
-                                    Completed
-                                  </span>
-                                ) : (
-                                <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-[#FFB400]/20 text-[#FFB400]">
-                                    Pending
-                                  </span>
-                                )}
-                              </td>
-                            <td className="py-4 px-2 text-right font-medium">
-                              {referral.status === "completed" ? (
-                                <span className="text-[#0DF5E3]">{referral.reward}</span>
-                              ) : (
-                                <span className="text-[#B3C6FF]">--</span>
-                              )}
-                            </td>
-                            </motion.tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-              )}
-
-              {activeTab === "tiers" && (
-                  <div className="card p-6">
-                  <h2 className="text-xl font-bold mb-4">Reward Tiers</h2>
-                  <p className="text-[#B3C6FF] mb-6">
-                    The more friends you refer, the higher your tier and the more rewards you earn.
-                    </p>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                      {referralTiers.map((tier, index) => (
-                        <motion.div
-                          key={tier.level}
-                        className="card overflow-hidden"
-                          initial={{ opacity: 0, y: 20 }}
-                          animate={{ opacity: 1, y: 0 }}
-                          transition={{ duration: 0.3, delay: index * 0.1 }}
-                        whileHover={{ y: -5, transition: { duration: 0.2 } }}
-                        >
-                        <div className={`h-2 bg-gradient-to-r ${tier.color}`}></div>
-                        <div className="p-5">
-                          <div className="flex items-center gap-3 mb-4">
-                            <div className="w-10 h-10 rounded-full flex items-center justify-center" style={{ backgroundColor: tier.bgColor }}>
-                                <svg
-                                  xmlns="http://www.w3.org/2000/svg"
-                                width="20"
-                                height="20"
-                                  viewBox="0 0 24 24"
-                                  fill="none"
-                                stroke={tier.iconColor}
-                                  strokeWidth="2"
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                              >
-                                <rect x="2" y="7" width="20" height="14" rx="2" ry="2"></rect>
-                                <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"></path>
-                              </svg>
-                            </div>
-                            <h3 className="text-lg font-bold" style={{ color: tier.iconColor }}>{tier.level}</h3>
-                          </div>
-                          
-                          <div className="space-y-3 text-sm">
-                            <div className="flex items-start gap-2">
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mt-0.5 text-[#0DF5E3]">
-                                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                <circle cx="9" cy="7" r="4" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M23 21v-2a4 4 0 0 0-3-3.87" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M16 3.13a4 4 0 0 1 0 7.75" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                              </svg>
-                              <div>
-                                <div className="text-[#B3C6FF]">Referrals needed:</div>
-                                <div className="font-medium">{tier.referrals}</div>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-start gap-2">
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mt-0.5 text-[#0DF5E3]">
-                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M12 6v6l4 2" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                              <div>
-                                <div className="text-[#B3C6FF]">Base reward:</div>
-                                <div className="font-medium">{tier.reward}</div>
-                              </div>
-                            </div>
-                            
-                            <div className="flex items-start gap-2">
-                              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" className="mt-0.5 text-[#0DF5E3]">
-                                <path d="M12 8V16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                <path d="M8 12H16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                <circle cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
-                                </svg>
-                              <div>
-                                <div className="text-[#B3C6FF]">Bonus:</div>
-                                <div className="font-medium">{tier.bonusReward}</div>
-                              </div>
-                              </div>
-                            </div>
-                          </div>
-                        </motion.div>
-                      ))}
-                  </div>
-
-                  <div className="mt-8 p-5 bg-[#0A0F33] rounded-lg border-l-4 border-[#8A3FFC]">
-                    <div className="flex items-start gap-3">
-                      <div className="text-[#8A3FFC] text-2xl">🏆</div>
-                        <div>
-                        <h3 className="font-bold mb-1">Bonus Rewards</h3>
-                        <p className="text-sm text-[#B3C6FF]">
-                          If your referrals complete at least 3 quests, you'll receive an additional 0.02 SOL per active referral!
-                        </p>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </motion.div>
-          </>
-        ) : (
-          <div className="card p-6 text-center">
-            <div className="w-16 h-16 rounded-full bg-[#0DF5E3]/20 flex items-center justify-center mx-auto mb-4">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
+          <StatCard
+            icon={
               <svg
                 xmlns="http://www.w3.org/2000/svg"
-                width="32"
-                height="32"
+                width="24"
+                height="24"
                 viewBox="0 0 24 24"
                 fill="none"
                 stroke="currentColor"
                 strokeWidth="2"
                 strokeLinecap="round"
                 strokeLinejoin="round"
-                className="text-[#0DF5E3]"
+                className="text-[#00a3ff]"
               >
-                <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
-                <circle cx="12" cy="7" r="4"></circle>
+                <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                <circle cx="9" cy="7" r="4"></circle>
+                <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
               </svg>
-            </div>
-            <h2 className="text-xl font-bold mb-2">Connect Your Wallet</h2>
-            <p className="text-[#B3C6FF] mb-6">Connect your wallet to access the referral program and start earning rewards.</p>
-            
-            <div className="flex justify-center">
-            <WalletConnect />
-            </div>
+            }
+            title="Total Referrals"
+            value={totalReferrals}
+            delay={0}
+          />
+
+          <StatCard
+            icon={
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                width="24"
+                height="24"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+                className="text-[#FFD700]"
+              >
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"></path>
+                <line x1="12" y1="17" x2="12.01" y2="17"></line>
+              </svg>
+            }
+            title="Total Rewards"
+            value={`${totalRewards} BNB`}
+            delay={0.1}
+            bgColor="#FFD700"
+          />
+
+          <TierProgressCard
+            currentTier={currentTier}
+            nextTier={nextTier}
+            referralsNeededForNextTier={referralsNeededForNextTier}
+          />
+        </div>
+
+        {/* Navigation Tabs */}
+        <div className="flex justify-start border-b border-gray-700 mb-6">
+          <TabButton
+            isActive={activeTab === TABS.LINK}
+            onClick={() => handleTabChange(TABS.LINK)}
+          >
+            Referral Link
+          </TabButton>
+          <div className="ml-2">
+            <TabButton
+              isActive={activeTab === TABS.HISTORY}
+              onClick={() => handleTabChange(TABS.HISTORY)}
+            >
+              Referral History
+            </TabButton>
           </div>
-        )}
+          <div className="ml-2">
+            <TabButton
+              isActive={activeTab === TABS.TIERS}
+              onClick={() => handleTabChange(TABS.TIERS)}
+            >
+              Referral Tiers
+            </TabButton>
+          </div>
+        </div>
+
+        {/* Tab Content */}
+        <AnimatePresence mode="wait">
+          {activeTab === TABS.LINK && (
+            <ReferralLinkTab
+              referralLink={referralLink}
+              onCopy={copyToClipboard}
+              copied={copied}
+              onShare={shareReferral}
+            />
+          )}
+
+          {activeTab === TABS.HISTORY && (
+            <ReferralHistoryTab
+              referralHistory={REFERRAL_HISTORY}
+              onSwitchToLink={handleSwitchToLink}
+            />
+          )}
+
+          {activeTab === TABS.TIERS && (
+            <ReferralTiersTab
+              currentTier={currentTier}
+              totalReferrals={totalReferrals}
+            />
+          )}
+        </AnimatePresence>
       </div>
     </Layout>
   )

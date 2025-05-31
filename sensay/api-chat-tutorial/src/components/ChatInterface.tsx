@@ -152,7 +152,7 @@ const ChatInterface: React.FC<ChatInterfaceProps> = ({
           const replicaPayload = {
             name: "Sample Replica",
             shortDescription: "A sample replica for demonstration",
-            greeting: "Hello, I'm the sample replica. How can I help you today?",
+            greeting: "Hello, I'm the Winks from QuestHub. How can I help you today?",
             slug: uniqueSlug, // Use the generated unique slug instead of the static one
             ownerID: SAMPLE_USER_ID,
             llm: {
