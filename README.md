@@ -116,11 +116,11 @@ npm run dev
 
 ```mermaid
 graph TD
-    A[User Interface<br>(Next.js Frontend)] --> B[Game Services<br>(Next.js API Routes)]
-    B --> C{Sensay AI<br>(Winks Replica)}
-    C --> D[Blockchain Network<br>(Data & Transactions)]
-    C --> E[Knowledge Base<br>(Sensay AI Data)]
-    B --> F[User Progress Tracking<br>(Database)]
+    A["User Interface<br/>(Next.js Frontend)"] --> B["Game Services<br/>(Next.js API Routes)"]
+    B --> C["Sensay AI<br/>(Winks Replica)"]
+    C --> D["Blockchain Network<br/>(Data & Transactions)"]
+    C --> E["Knowledge Base<br/>(Sensay AI Data)"]
+    B --> F["User Progress Tracking<br/>(Database)"]
     F --> A
 ```
 
