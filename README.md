@@ -16,7 +16,7 @@ QuestHub’s intelligence is powered by **Sensay AI's Replica** engine, enabling
 
 ### Core Components
 
-- **AI-Powered Guide (Winks):** A sophisticated Replica instance acting as a blockchain expert, game host, and educator.  
+- **AI-Powered Copilot (Winks):** A sophisticated Replica instance acting as a blockchain expert, game host, and educator.  
 - **Contextual Awareness:** Maintains conversation history and game state for coherent, continuous learning.  
 - **Adaptive Learning:** Dynamically adjusts challenge difficulty and feedback based on user performance.
 
