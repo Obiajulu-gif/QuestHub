@@ -1,73 +1,224 @@
-# QuestHub Sensay Integration
 
-## Overview
-QuestHub is a gamified learning platform that leverages the Sensay (QuestBot) API to deliver immersive quiz, riddle, and creative writing experiences. This repository includes a PowerShell script that automates the creation and management of a custom "Winks" replica, which serves as your interactive game guide and blockchain educator.
+# QuestHub: Interactive Learning Platform with Sensay AI Integration
 
-## Features
+✨ **Overview**
 
-### 1. Quiz Game Section
-- Fetch questions via `/quiz/question`
-- Submit answers with `/quiz/answer`
-- Offer break options using `/quiz/break`
-- Reset quiz progress through `/quiz/reset`
+**QuestHub** is an innovative and gamified learning platform designed to transform educational experiences. By seamlessly integrating **Sensay AI's Replica** technology and the **QuestBot API**, QuestHub offers a truly immersive and personalized journey through quizzes, riddles, and creative challenges. At its heart is **"Winks"**, a dynamic AI-powered blockchain educator and game guide, leveraging Sensay's capabilities to provide adaptive learning and engaging interactions.
 
-### 2. Riddle Game Section
-- Retrieve riddles using `/riddle`
-- Check answers via `/riddle/check-answer`
-- Provide break suggestions with `/riddle/break-options`
-- Reset riddle progress with `/riddle/reset`
+> 📺 **[Click here to watch the QuestHub demo video on Google Drive](https://drive.google.com/file/d/YOUR_DRIVE_FILE_ID/preview)**  
 
-### 3. Creative Challenges Section
-- Generate writing prompts (`/prompt`)
-- Evaluate PDF submissions (`/evaluate/{challenge_id}`)
-- Fetch detailed scores (`/scores/{challenge_id}`)
-- Retrieve challenge details (`/challenge/{challenge_id}`)
-- Default prompt duration is 48 hours; adjust `duration` and `time_unit` in the script as needed.
+---
 
-### 4. Fun Facts & Engagement
-- Deliver engaging blockchain trivia via `/fun-fact`
-- Encourage strategic breaks and personalized guidance
+🧠 **Sensay AI Integration & Replica Technology**
 
-## Prerequisites
-- Windows 10 or later
-- PowerShell 7+ (or PowerShell Core)
-- A valid Sensay API key
+QuestHub’s intelligence is powered by **Sensay AI's Replica** engine, enabling the creation of **“Winks”** — your personal AI guide.
 
-## Installation
-1. Clone this repository:
-   ```powershell
-   git clone https://github.com/Obiajulu-gif/QuestHub.git
-   cd questhub
-   ```
-2. Create a `.env.local` file at the project root with your Sensay API key:
-   ```text
-   Sensay_API=your_sensay_api_key_here
-   SENSAY_ORGANIZATION_ID=orgaization_id_here
-   NEXT_PUBLIC_SENSAY_API_KEY_SECRET=api_key_here
-   ```
+### Core Components
 
-## Configuration
-- **Sensay API Key**: Stored in `.env.local` as `Sensay_API`.
-- **API Version**: Set in the script via `$apiVersion` (default `2025-03-25`).
-- **API Base URL**: `https://questbot-endpoint.onrender.com`
-- **Replica Settings**: Customize the replica name, slug, greeting, and system prompts in `create-sensay-replica.ps1`.
+- **AI-Powered Guide (Winks):** A sophisticated Replica instance acting as a blockchain expert, game host, and educator.  
+- **Contextual Awareness:** Maintains conversation history and game state for coherent, continuous learning.  
+- **Adaptive Learning:** Dynamically adjusts challenge difficulty and feedback based on user performance.
 
-## Usage
-Run the setup script to create or refresh your QuestBot user and replica:
+### Replica Configuration (PowerShell)
+
+```powershell
+$replicaPayload = @{
+    name = "QuestBot Host"
+    shortDescription = "Knowledgeable host for QuestBot games"
+    greeting = "Welcome to QuestBot! Your guide for exciting challenges."
+    slug = "winks_v1"
+    ownerID = $userId
+    type = "character"
+    tags = @("Education", "Web3", "Blockchain", "Games")
+    llm = @{
+        model = "claude-3-5-haiku-latest"
+        memoryMode = "prompt-caching"
+        systemMessage = "As Winks, provide engaging blockchain guidance, ask questions, and offer encouraging feedback. Maintain a friendly, helpful, and slightly playful tone. Never reveal answers directly; always guide the user to discover them."
+    }
+}
+````
+
+---
+
+🎮 **Game Modules**
+
+| Module              | API Endpoint         | Key Features                                                             |
+| ------------------- | -------------------- | ------------------------------------------------------------------------ |
+| Quiz Engine         | `/api/quiz/question` | Adaptive questions, progress tracking, MCQ and fill-in-the-blank formats |
+| Riddle System       | `/api/riddle`        | Multi-attempt logic puzzles, wordplay hints, escalating difficulty       |
+| Creative Challenges | `/api/prompt`        | Open-ended tasks, PDF submissions, detailed AI feedback                  |
+| Knowledge Boost     | `/api/fun-fact`      | Quick blockchain trivia and "Did you know?" facts in context             |
+
+---
+
+🛠️ **Technical Stack**
+
+* **Frontend:** React.js (Next.js Framework)
+* **Styling:** Tailwind CSS
+* **State Management:** React Context API
+* **AI Integration:** Sensay SDK + QuestBot API
+* **Deployment:** Vercel
+
+### Project Structure
+
+```plaintext
+QuestHub/
+├── app/                  # Next.js routes and pages
+├── components/           # UI components
+├── contexts/             # Global state management
+├── utils/                # Utility functions and API handlers
+└── sensay-sdk/           # Sensay API integration layer
+```
+
+---
+
+🚀 **Quick Start**
+
+### Prerequisites
+
+* Node.js (v18+)
+* npm (v9+)
+* Git
+
+### Installation
+
+```bash
+git clone https://github.com/Obiajulu-gif/QuestHub.git
+cd QuestHub
+npm install --legacy-peer-deps
+```
+
+### Configuration
+
+Create `.env.local` and add:
+
+```env
+SENSAY_API_KEY=your_api_key_here
+NEXT_PUBLIC_SENSAY_API_KEY_SECRET=your_secret_key_here
+```
+
+### Initialize Replica
+
 ```powershell
 powershell -ExecutionPolicy Bypass -File .\create-sensay-replica.ps1
 ```
-This script will:
-1. Load your `Sensay_API` from `.env.local`.
-2. Create or recreate a QuestBot user.
-3. Delete any existing `winks_v1` replica.
-4. Create a new `winks_v1` replica configured as your interactive guide.
 
-## Contributing
-Contributions are welcome! Feel free to open issues or pull requests to:
-- Add new features
-- Improve documentation
-- Report bugs
+### Run Locally
 
-## License
-This project is licensed under the MIT License. See [LICENSE](LICENSE) for details. 
+```bash
+npm run dev
+# Navigate to http://localhost:3000
+```
+
+---
+
+🌐 **Deployment Architecture**
+
+```mermaid
+graph TD
+    A[User Interface<br>(Next.js Frontend)] --> B[Game Services<br>(Next.js API Routes)]
+    B --> C{Sensay AI<br>(Winks Replica)}
+    C --> D[Blockchain Network<br>(Data & Transactions)]
+    C --> E[Knowledge Base<br>(Sensay AI Data)]
+    B --> F[User Progress Tracking<br>(Database)]
+    F --> A
+```
+
+---
+
+# 🔍 AI Copilot Features
+
+Beyond just guiding, Winks acts as an intelligent AI Copilot, providing dynamic assistance and feedback.
+
+### Contextual Assistance:
+Winks offers tailored guidance based on the active game module, ensuring relevant and helpful prompts:
+
+* **Quiz:** *"Think carefully — sometimes the best answer isn’t obvious."*
+* **Riddles:** *"Look for double meanings or clever wordplay!"*
+* **Creative:** *"Structure your response clearly: intro, main idea, conclusion."*
+
+### Feedback System
+
+```js
+function generateFeedback(attempt) {
+    const accuracy = calculateAccuracy(attempt);
+    const complexity = assessComplexity(attempt);
+
+    let feedbackMessage = `Great effort! Your solution shows **${accuracy}% alignment** with core concepts. `;
+
+    if (accuracy < 50) {
+        feedbackMessage += "Let's review the basics together. What part felt most challenging?";
+    } else if (accuracy < 80) {
+        feedbackMessage += `You're almost there! Try ${complexity > 0.7 ? 'simplifying' : 'expanding on'} key areas to refine your understanding.`;
+    } else {
+        feedbackMessage += "Excellent work! You've grasped the concept beautifully. Ready for the next challenge?";
+    }
+    return feedbackMessage;
+}
+```
+
+---
+
+## 📌 **Key Integration Points**
+
+Seamless integration with Sensay AI and other services is achieved through carefully designed interaction points.
+
+1. Context Propagation:
+Enriching API requests with user-specific metadata allows Winks to provide highly personalized interactions.
+
+```js
+function enhanceContext(request) {
+    const userLevel = getLevel(request.userId);
+    const lastActivity = getLastSession(request.userId);
+    const currentStreak = getStreak(request.userId);
+
+    return {
+        ...request,
+        metadata: {
+            userLevel,
+            lastActivity,
+            currentStreak
+        }
+    };
+}
+```
+
+---
+
+🚧 **Future Roadmap**
+
+* [ ] **User-Generated Replica Templates**
+* [ ] **Cross-Platform Progress Sync**
+* [ ] **AI Challenge Creator Toolkit**
+* [ ] **Multi-Language Support (35+ languages)**
+
+### Upcoming Features
+
+* Personal replica branding
+* Custom knowledge domain uploads
+* Leaderboard integration
+* Multi-AI replica collaboration
+
+---
+
+🤝 **Contributing**
+
+1. Fork the repo
+2. Create a branch: `git checkout -b feature/your-feature-name`
+3. Commit: `git commit -m 'feat: Add feature'`
+4. Push: `git push origin feature/your-feature-name`
+5. Open a Pull Request 🎉
+
+---
+
+📄 **License & Attribution**
+
+Licensed under **MIT**.
+Uses Sensay AI (separate API credentials required).
+Includes elements from various open-source AI tools with attribution.
+
+---
+
+📧 **Contact**
+
+* GitHub Issues: [QuestHub on GitHub](https://github.com/Obiajulu-gif/QuestHub/issues)

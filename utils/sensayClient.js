@@ -3,8 +3,8 @@
 import { SensayAPI } from '../sensay/api-chat-tutorial/src/sensay-sdk';
 
 // Constants for Sensay integration - matching sample code
-const QUESTBOT_USER_ID = 'questbot-user';
-const QUESTBOT_HOST_REPLICA_SLUG = 'questbot-host';
+const QUESTBOT_USER_ID = "70a0a757-cd82-437e-b485-932a989a6649"; //'questbot-user';
+const QUESTBOT_HOST_REPLICA_SLUG = "winks_v1"; //'questbot-host';
 const API_VERSION = '2025-03-25';
 
 // Initialize the Sensay API client with organization credentials
@@ -69,26 +69,33 @@ export const getOrCreateQuestBotHostReplica = async () => {
     console.log('Listing all replicas for user...');
     const replicas = await client.replicas.getV1Replicas();
     
-    // Check if we have a replica with our slug
-    let replicaId;
+    // First try to find the specific winks_v1 replica
+    let existingReplica = null;
     if (replicas && replicas.items && replicas.items.length > 0) {
-      const existingReplica = replicas.items[0];
+      existingReplica = replicas.items.find(replica => replica.slug === QUESTBOT_HOST_REPLICA_SLUG);
+      
       if (existingReplica) {
-        replicaId = existingReplica.uuid;
-        console.log(`Found existing replica with UUID: ${replicaId}`);
+        console.log(`Found existing winks_v1 replica with UUID: ${existingReplica.uuid}`);
+        return existingReplica;
+      } else {
+        // If no specific replica found, use the first available one
+        existingReplica = replicas.items[0];
+        console.log(`Using existing replica with UUID: ${existingReplica.uuid}`);
         return existingReplica;
       }
     }
 
-    // Create a new replica if none exists
-    console.log('Creating new QuestBot host replica');
+    // If no replicas found, create a new one
+    console.log('No existing replicas found. Creating new QuestBot host replica');
     
     // Generate a unique slug by adding a timestamp and random string (exactly as in sample)
     const timestamp = Date.now();
     const randomStr = Math.random().toString(36).substring(2, 8);
-    const uniqueSlug = `${QUESTBOT_HOST_REPLICA_SLUG}-${timestamp}-${randomStr}`;
     
-    console.log(`Generated unique slug: ${uniqueSlug}`);
+    // Try to use winks_v1 as the slug if possible, otherwise generate a unique one
+    const uniqueSlug = QUESTBOT_HOST_REPLICA_SLUG;
+    
+    console.log(`Using slug: ${uniqueSlug}`);
     
     // Create the replica payload - match structure from sample code
     const replicaPayload = {
@@ -100,9 +107,9 @@ export const getOrCreateQuestBotHostReplica = async () => {
       type: "character",
       tags: ["Education", "Web3", "Blockchain", "Games"],
       llm: {
-        model: "claude-3-5-haiku-latest",
+        model: "claude-3-7-sonnet-latest", // Updated to more capable model
         memoryMode: "prompt-caching",
-        systemMessage: "You are the QuestBot Host, an engaging and knowledgeable guide who welcomes users to various blockchain game modes. You explain rules clearly and enthusiastically, helping users understand how to play and win. You're friendly, supportive, and have a passion for blockchain education through gamification. Your tone is encouraging but professional."
+        systemMessage: "Your name is Winks. You are the QuestBot Host, an engaging and knowledgeable guide who welcomes users to various blockchain game modes. You explain rules clearly and enthusiastically, helping users understand how to play and win. You're friendly, supportive, and have a passion for blockchain education through gamification. Your tone is encouraging but professional."
       }
     };
     
@@ -268,6 +275,48 @@ function addApplicationContext(message, currentRoute) {
     
     const appContext = `
 [CONTEXT]
+Your name is Winks.
+
+Winks is QuestHub's dedicated game guide and blockchain education companion. With expertise in interactive learning experiences, Winks helps users navigate through quizzes, riddles, and creative challenges on the QuestHub platform, making complex concepts accessible and enjoyable.
+
+#### **Core Identity**
+- **Name:** Winks from QuestHub
+- **Background:** Interactive game guide and blockchain educator
+- **Education:** Built with comprehensive knowledge of blockchain technologies, gamification principles, and interactive learning methodologies
+
+#### **Purpose & Goals**
+Winks exists to guide users through QuestHub's game-based learning experiences, transforming complex blockchain concepts into engaging, accessible content. Winks aims to enhance user engagement, foster learning through play, and help users earn badges and complete challenges with confidence and enthusiasm.
+
+#### **QuestHub Features & Integration**
+Winks is fully integrated with the QuestHub platform
+#### **Personality Traits**
+Winks communicates with enthusiasm, warmth, and a playful spirit. Its tone is:
+- **Encouraging:** Motivates users through challenges, celebrating successes and providing supportive guidance when users struggle
+- **Patient:** Takes time to explain concepts thoroughly, adapting explanations based on user comprehension
+- **Playful:** Incorporates humor and wordplay to keep learning enjoyable
+- **Knowledgeable:** Shares insights about blockchain and Web3 with clarity and precision
+- **Adaptive:** Adjusts communication style to match user expertise levels, from complete beginners to advanced users
+- **Empathetic:** Recognizes user frustration or confusion and responds with understanding
+- **Personalized:** Remembers user preferences and progress to provide tailored assistance
+
+#### **Knowledge Areas**
+- Blockchain fundamentals and technologies
+- Quiz and riddle gameplay strategies
+- Creative writing and evaluation criteria
+- Badge and achievement systems
+- Game-based learning methodologies
+- Interactive educational techniques
+
+#### **Response Patterns**
+- **For beginners:** Simple, encouraging explanations with relatable analogies and extra hints
+- **For intermediate learners:** More detailed explanations with specific blockchain references and moderate challenge levels
+- **For advanced users:** Complex discussions, deeper insights, and challenging questions that push their knowledge boundaries
+- **For struggling users:** Extra patience, simplified explanations, and additional encouragement
+- **For quiz/riddle interaction:** Clear presentation of questions, helpful hints, and enthusiastic feedback
+- **For creative challenges:** Detailed prompt explanations, constructive evaluation, and inspiration
+
+You also write messages to welcome users to the application where neccassary.
+
 QuestHub is a blockchain education platform where users can:
 1. Take quizzes about blockchain concepts (/quests/quiz)
 2. Solve blockchain-related riddles (/quests/riddles)
@@ -337,13 +386,13 @@ export const getWelcomeMessage = async (gameMode) => {
 function getGameModePrompt(gameMode) {
   switch (gameMode) {
     case 'quiz':
-      return `Write a brief, enthusiastic welcome message for users starting the Blockchain Quiz Challenge. Explain that this is a multiple-choice quiz testing their blockchain knowledge, with 5 attempts per question. Mention they'll earn BNB rewards for correct answers and encourage them to learn while having fun. Keep it under 150 words.`;
+      return `You must generate a brief and your name is Winks, enthusiastic welcome message for users starting the Blockchain Quiz Challenge. Explain that this is a multiple-choice quiz testing their blockchain knowledge, with 5 attempts per question. Mention they'll earn BNB rewards for correct answers and encourage them to learn while having fun. Keep it under 50 words.`;
     case 'riddles':
-      return `Write a brief, engaging welcome message for users starting the Blockchain Riddles game. Explain that they'll solve brain-teasing riddles about blockchain concepts with 5 attempts per riddle. Mention they'll earn BNB rewards for correct answers and that hints are available. Encourage critical thinking. Keep it under 150 words.`;
+      return `You must generate a brief and your name is Winks, engaging welcome message for users starting the Blockchain Riddles game. Explain that they'll solve brain-teasing riddles about blockchain concepts with 5 attempts per riddle. Mention they'll earn BNB rewards for correct answers and that hints are available. Encourage critical thinking. Keep it under 50 words.`;
     case 'creative':
-      return `Write a brief, inspiring welcome message for users starting the Creative Web3 Challenge. Explain that they'll receive a prompt to write about Web3 technologies and submit a PDF response that will be evaluated on technical understanding, creativity, clarity, engagement, and adherence to the prompt. Mention they have 48 hours to complete it and will earn BNB rewards. Keep it under 150 words.`;
+      return `You must generate a brief and your name is Winks, inspiring welcome message for users starting the Creative Web3 Challenge. Explain that they'll receive a prompt to write about Web3 technologies and submit a PDF response that will be evaluated on technical understanding, creativity, clarity, engagement, and adherence to the prompt. Mention they have 48 hours to complete it and will earn BNB rewards. Keep it under 50 words.`;
     default:
-      return `Write a brief, welcoming message introducing QuestBot as a platform offering various blockchain-related games and challenges that reward users with BNB for participating and learning. Keep it under 100 words.`;
+      return `You must generate a brief and your name is Winks, enthusiastic welcome message introducing QuestHub as a platform offering various blockchain-related games and challenges that reward users with BNB for participating and learning. Keep it concise, engaging, and under 50 words. Introduce yourself and the application. Just a friendly greeting nothing else. Dont do anything else apart from the welcome message.`;
   }
 }
 
