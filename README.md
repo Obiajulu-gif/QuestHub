@@ -5,7 +5,7 @@
 
 **QuestHub** is an innovative and gamified learning platform designed to transform educational experiences. By seamlessly integrating **Sensay AI's Replica** technology and the **QuestBot API**, QuestHub offers a truly immersive and personalized journey through quizzes, riddles, and creative challenges. At its heart is **"Winks"**, a dynamic AI-powered blockchain educator and game guide, leveraging Sensay's capabilities to provide adaptive learning and engaging interactions.
 
-> 📺 **[Click here to watch the QuestHub demo video on Google Drive](https://drive.google.com/file/d/YOUR_DRIVE_FILE_ID/preview)**  
+> 📺 **[Click here to watch the QuestHub demo video on Google Drive](https://drive.google.com/file/d/1yS7uYKIacl91kJSbPoZ6DYuf91-uI4L5/view?usp=sharing)**  
 
 ---
 
