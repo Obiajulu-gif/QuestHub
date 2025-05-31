@@ -3,7 +3,8 @@
 
 ✨ **Overview**
 
-**QuestHub** is an innovative and gamified learning platform designed to transform educational experiences. By seamlessly integrating **Sensay AI's Replica** technology and the **QuestBot API**, QuestHub offers a truly immersive and personalized journey through quizzes, riddles, and creative challenges. At its heart is **"Winks"**, a dynamic AI-powered blockchain educator and game guide, leveraging Sensay's capabilities to provide adaptive learning and engaging interactions.
+**QuestHub** is an innovative and gamified learning platform designed to transform educational experiences. By seamlessly integrating **Sensay AI's Replica** technology and the [**QuestBot API**](
+https://github.com/Obiajulu-gif/questbot-endpoint), QuestHub offers a truly immersive and personalized journey through quizzes, riddles, and creative challenges. At its heart is **"Winks"**, a dynamic AI-powered blockchain educator and game guide, leveraging Sensay's capabilities to provide adaptive learning and engaging interactions.
 
 > 📺 **[Click here to watch the QuestHub demo video on Google Drive](https://drive.google.com/file/d/1yS7uYKIacl91kJSbPoZ6DYuf91-uI4L5/view?usp=sharing)**  
 
@@ -11,7 +12,7 @@
 
 🧠 **Sensay AI Integration & Replica Technology**
 
-QuestHub’s intelligence is powered by **Sensay AI's Replica** engine, enabling the creation of **“Winks”** — your personal AI guide.
+QuestHub’s intelligence is powered by **Sensay AI's Replica** engine, enabling the creation of **“Winks”** — your personal AI quest copilot.
 
 ### Core Components
 
@@ -60,7 +61,8 @@ https://github.com/Obiajulu-gif/questbot-endpoint)
 * **Frontend:** React.js (Next.js Framework)
 * **Styling:** Tailwind CSS
 * **State Management:** React Context API
-* **AI Integration:** Sensay SDK + QuestBot API
+* **AI Integration:** Sensay SDK + [QuestBot API](
+https://github.com/Obiajulu-gif/questbot-endpoint)
 * **Deployment:** Vercel
 
 ### Project Structure
