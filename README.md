@@ -127,6 +127,8 @@ graph TD
 ---
 
 # 🔍 AI Copilot Features
+**API Endpoint**: [QuestHub Games](
+https://github.com/Obiajulu-gif/questbot-endpoint)
 
 Beyond just guiding, Winks acts as an intelligent AI Copilot, providing dynamic assistance and feedback.
 
